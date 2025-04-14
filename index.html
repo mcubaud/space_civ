@@ -453,7 +453,7 @@ function buildHabitation() {
       angle: selectedBase.spawn_angle,
       hp: 1000
     });
-    selectedBase.spawn_angle = selectedBase.angle + selectedBase.number_buldings * (-1)**(selectedBase.number_buldings) *100/planet.baseRadius
+    selectedBase.spawn_angle = selectedBase.spawn_angle + selectedBase.number_buldings * (-1)**(selectedBase.number_buldings) *100/planet.baseRadius
   } else {
     alert("Not enough resources to build a habitation module!");
   }
