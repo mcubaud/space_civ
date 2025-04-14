@@ -50,12 +50,6 @@ let resources_colors = {
   };
 
 let lastUIState = { type: null, ref: null };
-let baseImage;
-
-function preload() {
-  baseImage = loadImage('base.png');
-}
-preload()
 
 canvas.addEventListener("wheel", (e) => {
   e.preventDefault();
