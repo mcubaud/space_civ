@@ -249,7 +249,7 @@ class Planet {
 
         var img1 = new Image();
         img1.src="base.png"
-        ctx.drawImage(img1, 0, 0, 100, 100)
+        ctx.drawImage(img1, 5, 50, 100, 100)
         //ctx.fillStyle = "#e76f51";
         //ctx.beginPath();
         //ctx.moveTo(0, -10);
@@ -326,13 +326,13 @@ class Planet {
     const angle = Math.atan2(dy, dx);
     const surfaceR = this.planetRadius(angle);
 
-    if (Math.abs(clickDist - surfaceR) < 15) {
+    if (Math.abs(clickDist - surfaceR) < 50) {
       const pos = this.getSurfacePosition(angle);
 
       // Click colonist
       for (let c of this.colonists) {
         const cPos = this.getSurfacePosition(c.currentAngle);
-        if (Math.hypot(cPos.x - x, cPos.y - y) < 15) {
+        if (Math.hypot(cPos.x - x, cPos.y - y) < 50) {
           this.selectedColonist = c;
           return true;
         }
@@ -341,7 +341,7 @@ class Planet {
       // Click building
       for (let b of this.buildings) {
         const bPos = this.getSurfacePosition(b.angle);
-        if (Math.hypot(bPos.x - x, bPos.y - y) < 15) {
+        if (Math.hypot(bPos.x - x, bPos.y - y) < 50) {
           selectedBase = b;
           this.selectedColonist = null;
           if (b.onClick) b.onClick();
@@ -354,7 +354,7 @@ class Planet {
         var any_close = false;
         for (let r of this.resources) {
           const rPos = this.getSurfacePosition(r.angle);
-          if (Math.hypot(rPos.x - x, rPos.y - y) < 15) {
+          if (Math.hypot(rPos.x - x, rPos.y - y) < 50) {
           	any_close = true;
           	if(this.selectedColonist.targetResource){
             	let r2=this.selectedColonist.targetResource;
