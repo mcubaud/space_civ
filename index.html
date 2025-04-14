@@ -160,9 +160,11 @@ class Planet {
 
     // Sum of sinusoidal functions
     r += this.amplitude * (
-      0.5 * Math.sin(3 * angle + this.offset1) +
-      0.3 * Math.sin(7 * angle + this.offset2) +
-      0.2 * Math.sin(13 * angle + this.offset1 * 0.5)
+      0.7 * Math.sin(this.baseRadius/100 * angle + this.offset1) +
+      0.5 * Math.sin(3 * this.baseRadius/500 * angle + this.offset1) +
+      0.3 * Math.sin(7 * this.baseRadius/500* angle + this.offset2) +
+      0.2 * Math.sin(13 * this.baseRadius/500 * angle + this.offset1 * 0.5) +
+      0.1 * Math.sin(13 * this.baseRadius/500 * angle + this.offset2 * 0.5)
     );
 
     // Mountain-like features using a smooth ridge pattern
@@ -390,7 +392,7 @@ function generatePlanets(n = 5) {
   for (let i = 0; i < n; i++) {
     let tries = 0;
     while (tries < maxTries) {
-      let baseRadius = 1000 + Math.random() * 500;
+      let baseRadius = 500 + Math.random() * 2000;
       let amplitude = 20 + Math.random() * 20;
       let x = Math.random() * 30000 - 15000;
       let y = Math.random() * 12000 - 6000;
@@ -415,6 +417,9 @@ function generatePlanets(n = 5) {
 
 var planets = generatePlanets(5);
 planets[0].spawnBase(Math.random() * Math.PI * 2);
+var base_pos = planets[0].getSurfacePosition(planets[0].buildings[0].angle)
+panX = document.querySelector("body").clientWidth/2 - base_pos.x * zoom;
+panY = document.querySelector("body").clientHeight/2 - base_pos.y * zoom
 
 
 const uiPanel = document.getElementById("uiPanel");
