@@ -135,6 +135,7 @@ class Planet {
       moving: false,
       carrying: {},
       capacity: 20,
+      moveSpeed: 0.05,
       miningSpeed: { "iron": 2 },
       state: "idle",
       targetResource: null,
@@ -234,8 +235,8 @@ class Planet {
     if (c.moving) {
       let diff = c.targetAngle - c.currentAngle;
       diff = Math.atan2(Math.sin(diff), Math.cos(diff));
-      if (Math.abs(diff) > 0.02) {
-        c.currentAngle += Math.sign(diff) * 0.05;
+      if (Math.abs(diff) > c.moveSpeed) {
+        c.currentAngle += Math.sign(diff) * c.moveSpeed;
       } else {
         c.currentAngle = c.targetAngle;
         c.moving = false;
