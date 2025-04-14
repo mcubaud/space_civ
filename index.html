@@ -49,6 +49,9 @@ let resources_colors = {
   'water':'#0048ff'
   };
 
+let lastUIState = { type: null, ref: null };
+
+
 canvas.addEventListener("wheel", (e) => {
   e.preventDefault();
   
@@ -396,40 +399,63 @@ function spawnSpecialist(type) {
 
 // ===== Animation Loop =====
 function updateUIPanel() {
-  uiPanel.style.display = "none";
-  uiPanel.innerHTML = "";
-  if (planets.some(p => p.selectedColonist)) {
-    const colonist = planets.find(p => p.selectedColonist)?.selectedColonist;
-    if (!colonist) return;
+  const currentColonist = planets.find(p => p.selectedColonist)?.selectedColonist;
+
+  if (currentColonist && lastUIState.ref !== currentColonist) {
+    // Switch to colonist UI
+    lastUIState = { type: "colonist", ref: currentColonist };
+    selectedBase = null;
+
     uiPanel.style.display = "block";
+    uiPanel.innerHTML = `
+      <strong>Colonist</strong><br>
+      State: <span id="colonistState">${currentColonist.state}</span><br>
+      Carrying:<br><ul id="colonistCarrying"></ul>
+      <button onclick="alert('Building feature coming soon!')">Build something 🛠️</button>
+    `;
+  } else if (selectedBase && lastUIState.ref !== selectedBase) {
+    // Switch to base UI
+    lastUIState = { type: "base", ref: selectedBase };
+    planets.forEach(p => p.selectedColonist = null); // clear selection
 
-    let html = `<strong>Colonist</strong><br>`;
-    html += `State: ${colonist.state}<br>`;
-    html += `Carrying:<br><ul>`;
-    for (let type in colonist.carrying) {
-      html += `<li>${type}: ${colonist.carrying[type]}</li>`;
-    }
-    html += `</ul>`;
-
-    html += `<button onclick="alert('Building feature coming soon!')">Build something 🛠️</button>`;
-    uiPanel.innerHTML = html;
-  } else if (selectedBase) {
     uiPanel.style.display = "block";
+    uiPanel.innerHTML = `
+      <strong>Base</strong><br>
+      Resources:<br><ul id="baseResources"></ul>
+      <button id="spawnSpecialist_miner">Create Miner</button><br>
+      <button id="spawnSpecialist_builder">Create Builder</button>
+    `;
 
-    let html = `<strong>Base</strong><br>`;
-    html += `Resources:<br><ul>`;
-    for (let type in selectedBase.resources) {
-      html += `<li>${type}: ${selectedBase.resources[type]}</li>`;
+    document.getElementById("spawnSpecialist_miner").onclick = () => spawnSpecialist('miner');
+    document.getElementById("spawnSpecialist_builder").onclick = () => spawnSpecialist('builder');
+  } else if (!currentColonist && !selectedBase) {
+    // Nothing selected
+    if (lastUIState.type !== null) {
+      uiPanel.style.display = "none";
+      uiPanel.innerHTML = "";
+      lastUIState = { type: null, ref: null };
     }
-    html += `</ul>`;
+  }
 
-    html += `<button id="spawnSpecialist_miner">Create Miner</button><br>`;
-    html += `<button id="spawnSpecialist_builder">Create Builder</button>`;
-    uiPanel.innerHTML = html;
-    document.getElementById("spawnSpecialist_miner").onclick=function(){spawnSpecialist('miner')}
-    document.getElementById("spawnSpecialist_builder").onclick=function(){spawnSpecialist('builder')}
+  // If panel is showing, update dynamic parts
+  if (lastUIState.type === "colonist") {
+    const c = lastUIState.ref;
+    document.getElementById("colonistState").textContent = c.state;
+    const ul = document.getElementById("colonistCarrying");
+    ul.innerHTML = "";
+    for (let type in c.carrying) {
+      ul.innerHTML += `<li>${type}: ${c.carrying[type]}</li>`;
+    }
+  } else if (lastUIState.type === "base") {
+    const b = lastUIState.ref;
+    const ul = document.getElementById("baseResources");
+    ul.innerHTML = "";
+    for (let type in b.resources) {
+      ul.innerHTML += `<li>${type}: ${b.resources[type]}</li>`;
+    }
   }
 }
+
 
 
 
