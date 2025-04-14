@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Modular Multi-Planet View</title>
+  <style>
+    body { margin: 0; overflow: hidden; }
+    canvas { display: block; background: #000; }
+  </style>
+</head>
+<body>
+<canvas id="gameCanvas"></canvas>
+<div id="uiPanel" style="
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: rgba(20,20,30,0.9);
+  color: white;
+  padding: 10px 15px;
+  border-radius: 10px;
+  font-family: sans-serif;
+  font-size: 14px;
+  display: none;
+  z-index: 10;
+  min-width: 200px;
+">
+</div>
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+resizeCanvas();
+window.addEventListener("resize", resizeCanvas);
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+
+// Global view transforms
+let zoom = 1;
+let panX = 0, panY = 0;
+let isDragging = false;
+let lastMouseX = 0, lastMouseY = 0;
+let list_resources = ['iron', 'copper', 'food', 'water'];
+let resources_colors = {
+	'iron':"#99aaad",
+  'copper':"#f2a049",
+  'food':'#07ab2a',
+  'water':'#0048ff'
+  };
+
+canvas.addEventListener("wheel", (e) => {
+  e.preventDefault();
+  
+  const mouseX = e.clientX;
+  const mouseY = e.clientY;
+
+  const worldX = (mouseX - panX) / zoom;
+  const worldY = (mouseY - panY) / zoom;
+
+  const zoomFactor = e.deltaY < 0 ? 1.1 : 1 / 1.1;
+  zoom *= zoomFactor;
+
+  // Adjust pan to keep zoom centered at mouse
+  panX = mouseX - worldX * zoom;
+  panY = mouseY - worldY * zoom;
+});
+
+
+canvas.addEventListener("mousedown", (e) => {
+  isDragging = true;
+  lastMouseX = e.clientX;
+  lastMouseY = e.clientY;
+});
+canvas.addEventListener("mousemove", (e) => {
+  if (isDragging) {
+    let dx = e.clientX - lastMouseX;
+    let dy = e.clientY - lastMouseY;
+    panX += dx;
+    panY += dy;
+    lastMouseX = e.clientX;
+    lastMouseY = e.clientY;
+  }
+});
+canvas.addEventListener("mouseup", () => isDragging = false);
+canvas.addEventListener("mouseleave", () => isDragging = false);
+
+// ===== ⭐ MODULAR: Planet Class =====
+class Planet {
+  constructor(x, y, baseRadius = 120, amplitude = 20) {
+    this.center = { x, y };
+    this.baseRadius = baseRadius;
+    this.amplitude = amplitude;
+    this.offset1 = Math.random() * Math.PI * 2;
+    this.offset2 = Math.random() * Math.PI * 2;
+    this.colonists = [];
+    this.resources = [];
+    this.buildings = [];
+    this.selectedColonist = null;
+
+    
+    this.spawnResource(list_resources[Math.floor(list_resources.length * Math.random())], Math.random() * Math.PI * 2, 100);
+    this.spawnResource(list_resources[Math.floor(list_resources.length * Math.random())], Math.random() * Math.PI * 2, 100);
+    this.spawnResource(list_resources[Math.floor(list_resources.length * Math.random())], Math.random() * Math.PI * 2, 100);
+  }
+
+  spawnBase(angle) {
+    this.buildings.push({
+      type: "base",
+      angle: angle,
+      resources: {},
+      onClick: () => {
+        
+      }
+    });
+  }
+
+  spawnResource(type, angle, stock) {
+    this.resources.push({
+      type,
+      angle,
+      stock,
+      list_miners:[]
+    });
+  }
+
+  createColonist(angle) {
+    return {
+      angle,
+      currentAngle: angle,
+      targetAngle: angle,
+      moving: false,
+      carrying: {},
+      capacity: 20,
+      miningSpeed: { "iron": 2 },
+      state: "idle",
+      targetResource: null,
+      base: this.buildings.find(b => b.type === "base"),
+    };
+  }
+
+  planetRadius(angle) {
+    return this.baseRadius +
+      this.amplitude * (
+        0.6 * Math.sin(3 * angle + this.offset1) +
+        0.4 * Math.sin(7 * angle + this.offset2)
+      );
+  }
+
+  getSurfacePosition(angle) {
+    const r = this.planetRadius(angle);
+    return {
+      x: this.center.x + r * Math.cos(angle),
+      y: this.center.y + r * Math.sin(angle),
+      angle: angle,
+      radius: r,
+    };
+  }
+
+  drawImageAt(angle, size, drawFn) {
+    const pos = this.getSurfacePosition(angle);
+    ctx.save();
+    ctx.translate(pos.x, pos.y);
+    ctx.rotate(angle + Math.PI / 2);
+    ctx.scale(1 / zoom, 1 / zoom);
+    drawFn();
+    ctx.restore();
+  }
+
+  draw() {
+    ctx.save();
+    ctx.translate(this.center.x, this.center.y);
+    ctx.beginPath();
+    const steps = 360;
+    for (let i = 0; i <= steps; i++) {
+      let angle = (i / steps) * Math.PI * 2;
+      let r = this.planetRadius(angle);
+      let x = r * Math.cos(angle);
+      let y = r * Math.sin(angle);
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.fillStyle = "#264653";
+    ctx.fill();
+    ctx.strokeStyle = "#2a9d8f";
+    ctx.lineWidth = 2 / zoom;
+    ctx.stroke();
+    ctx.restore();
+
+    this.buildings.forEach(b => this.drawObject(b, "building"));
+    this.resources.forEach(r => this.drawObject(r, "resource"));
+    this.colonists.forEach(c => {
+      this.updateColonist(c);
+      this.drawObject(c, "colonist");
+    });
+  }
+
+  drawObject(obj, type) {
+    this.drawImageAt(obj.currentAngle ?? obj.angle, 20, () => {
+      if (type === "colonist") {
+        ctx.fillStyle = "#e9c46a";
+        ctx.beginPath();
+        ctx.arc(0, 0, 10, 0, Math.PI * 2);
+        ctx.fill();
+        if (obj === this.selectedColonist) {
+          ctx.strokeStyle = "#fff";
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+      } else if (type === "resource") {
+      	
+        ctx.fillStyle = resources_colors[obj.type]
+        
+        ctx.beginPath();
+        ctx.rect(-8, -8, 16, 16);
+        ctx.fill();
+      } else if (type === "building") {
+        ctx.fillStyle = "#e76f51";
+        ctx.beginPath();
+        ctx.moveTo(0, -10);
+        ctx.lineTo(10, 10);
+        ctx.lineTo(-10, 10);
+        ctx.closePath();
+        ctx.fill();
+      }
+    });
+  }
+
+  updateColonist(c) {
+    if (c.moving) {
+      let diff = c.targetAngle - c.currentAngle;
+      diff = Math.atan2(Math.sin(diff), Math.cos(diff));
+      if (Math.abs(diff) > 0.02) {
+        c.currentAngle += Math.sign(diff) * 0.05;
+      } else {
+        c.currentAngle = c.targetAngle;
+        c.moving = false;
+      }
+      return;
+    }
+
+    // Mining logic
+    if (c.state === "mining" && c.targetResource) {
+      if (c.targetResource.stock > 0) {
+        let amount = Math.min(c.miningSpeed[c.targetResource.type] ?? 1, c.capacity, c.targetResource.stock);
+        c.capacity -= amount
+        c.targetResource.stock -= amount;
+        var old_amount = c.carrying[c.targetResource.type]??0;
+        c.carrying[c.targetResource.type] = old_amount+amount;
+        console.log(c.carrying, c.capacity, c.targetResource.stock)
+        if(c.capacity<=0){ 
+        	c.state = "to_base";
+          c.targetAngle = c.base.angle;
+          c.moving = true;
+        }
+        
+        // REMOVE depleted resource
+        if (c.targetResource.stock <= 0) {
+          const index = this.resources.indexOf(c.targetResource);
+          c.targetResource.list_miners.forEach(c2=> {console.log(c2); c2.state="idle"; c2.targetAngle = c2.base.angle; c2.targetResource=null})
+          if (index !== -1) this.resources.splice(index, 1);
+          c.targetResource = null;
+          c.state = "to_base";
+          c.targetAngle = c.base.angle;
+        }
+      }
+    } else if (c.state === "to_base" && !c.moving) {
+      // drop off
+      console.log('Delivered',c.carrying);
+      for(let resource_type in c.carrying){
+      	var base_resource_quantity = c.base.resources[resource_type]??0
+        c.base.resources[resource_type] = base_resource_quantity+ c.carrying[resource_type];
+      }
+      c.carrying = {};
+      c.capacity = 20;
+      if(c.targetResource){
+      	c.targetAngle = c.targetResource.angle;
+        c.state = "mining";
+        c.moving = true;
+      }else{
+      	c.state="idle"
+      }
+      
+    } 
+  }
+
+  handleClick(x, y) {
+    const dx = x - this.center.x;
+    const dy = y - this.center.y;
+    const clickDist = Math.sqrt(dx * dx + dy * dy);
+    const angle = Math.atan2(dy, dx);
+    const surfaceR = this.planetRadius(angle);
+
+    if (Math.abs(clickDist - surfaceR) < 15) {
+      const pos = this.getSurfacePosition(angle);
+
+      // Click colonist
+      for (let c of this.colonists) {
+        const cPos = this.getSurfacePosition(c.currentAngle);
+        if (Math.hypot(cPos.x - x, cPos.y - y) < 15) {
+          this.selectedColonist = c;
+          return true;
+        }
+      }
+
+      // Click building
+      for (let b of this.buildings) {
+        const bPos = this.getSurfacePosition(b.angle);
+        if (Math.hypot(bPos.x - x, bPos.y - y) < 15) {
+          selectedBase = b;
+          this.selectedColonist = null;
+          if (b.onClick) b.onClick();
+          return true;
+        }
+      }
+
+      // Move colonist or assign task
+      if (this.selectedColonist) {
+        var any_close = false;
+        for (let r of this.resources) {
+          const rPos = this.getSurfacePosition(r.angle);
+          if (Math.hypot(rPos.x - x, rPos.y - y) < 15) {
+          	any_close = true;
+          	if(this.selectedColonist.targetResource){
+            	let r2=this.selectedColonist.targetResource;
+              r2.list_miners = r2.list_miners.filter(x => x !== this.selectedColonist);
+            } 
+            this.selectedColonist.state = "mining";
+            this.selectedColonist.targetResource = r;
+            r.list_miners.push(this.selectedColonist);
+            this.selectedColonist.targetAngle = r.angle;
+            this.selectedColonist.moving = true;
+            this.selectedColonist = null;
+            return true;
+          }
+        }
+        
+        if(this.selectedColonist.targetResource){
+            	let r2=this.selectedColonist.targetResource;
+              r2.list_miners = r2.list_miners.filter(x => x !== this.selectedColonist);
+            } 
+        this.selectedColonist.state = "idle"
+				this.selectedColonist.targetResource = null;
+        this.selectedColonist.targetAngle = angle;
+        this.selectedColonist.moving = true;
+        this.selectedColonist = null;
+        return true;
+      }
+    }
+    return false;
+  }
+}
+
+
+// ===== ⭐ MODULAR: Create Multiple Planets =====
+const planets = [
+  new Planet(400, 400),
+  new Planet(800, 300, 100),
+  new Planet(1200, 500, 90, 10),
+];
+planets[0].spawnBase(Math.random() * Math.PI * 2);
+
+const uiPanel = document.getElementById("uiPanel");
+let selectedBase = null;
+
+
+// ===== Handle Clicks Delegated to Planets =====
+
+var screenToWorld = (sx, sy) => ({
+  x: (sx - panX)/zoom,
+  y: (sy - panY)/zoom,
+});
+
+canvas.addEventListener("click", (e) => {
+  const { x, y } = screenToWorld(e.clientX, e.clientY);
+  for (let planet of planets) {
+    if (planet.handleClick(x, y)) return;
+  }
+});
+
+function spawnSpecialist(type) {
+	console.log(type);
+  if (!selectedBase) return;
+  
+  const planet = planets.find(p => p.buildings.includes(selectedBase));
+  const colonist = planet.createColonist(selectedBase.angle + 0.01);
+  if (type === "miner") {
+    colonist.miningSpeed = { iron: 2, copper: 2 };
+  } else if (type === "builder") {
+    colonist.miningSpeed = {}; // maybe none
+  }
+  planet.colonists.push(colonist);
+}
+
+
+// ===== Animation Loop =====
+function updateUIPanel() {
+  uiPanel.style.display = "none";
+  uiPanel.innerHTML = "";
+  if (planets.some(p => p.selectedColonist)) {
+    const colonist = planets.find(p => p.selectedColonist)?.selectedColonist;
+    if (!colonist) return;
+    uiPanel.style.display = "block";
+
+    let html = `<strong>Colonist</strong><br>`;
+    html += `State: ${colonist.state}<br>`;
+    html += `Carrying:<br><ul>`;
+    for (let type in colonist.carrying) {
+      html += `<li>${type}: ${colonist.carrying[type]}</li>`;
+    }
+    html += `</ul>`;
+
+    html += `<button onclick="alert('Building feature coming soon!')">Build something 🛠️</button>`;
+    uiPanel.innerHTML = html;
+  } else if (selectedBase) {
+    uiPanel.style.display = "block";
+
+    let html = `<strong>Base</strong><br>`;
+    html += `Resources:<br><ul>`;
+    for (let type in selectedBase.resources) {
+      html += `<li>${type}: ${selectedBase.resources[type]}</li>`;
+    }
+    html += `</ul>`;
+
+    html += `<button id="spawnSpecialist_miner">Create Miner</button><br>`;
+    html += `<button id="spawnSpecialist_builder">Create Builder</button>`;
+    uiPanel.innerHTML = html;
+    document.getElementById("spawnSpecialist_miner").onclick=function(){spawnSpecialist('miner')}
+    document.getElementById("spawnSpecialist_builder").onclick=function(){spawnSpecialist('builder')}
+  }
+}
+
+
+
+function update() {
+  ctx.setTransform(1, 0, 0, 1, 0, 0); // reset any transform
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Apply global camera transform
+  
+
+  ctx.setTransform(zoom, 0, 0, zoom, panX, panY);
+
+
+  for (let planet of planets) {
+    planet.draw();
+  }
+  updateUIPanel();
+  requestAnimationFrame(update);
+}
+update();
+</script>
+</body>
+</html>
