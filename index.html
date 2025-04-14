@@ -165,8 +165,10 @@ class Planet {
   spawnBase(angle) {
     this.buildings.push({
       type: "base",
+      number_buldings: 1,
       hp: 5000,
       angle: angle,
+      spawn_angle: angle - 100/this.baseRadius,
       resources: {},
       onClick: () => {
         
@@ -444,6 +446,9 @@ function buildHabitation() {
     selectedBase.resources.iron -= 50;
     selectedBase.resources.copper -= 30;
 
+    selectedBase.number_buldings +=1
+    selectedBase.spawn_angle = selectedBase.angle + selectedBase.number_buldings * (-1)**(selectedBase.number_buldings) *100/planet.baseRadius
+
     planet.buildings.push({
       type: "hab",
       angle: selectedBase.angle + 0.2 + Math.random() * 0.2,
@@ -531,7 +536,7 @@ function spawnSpecialist(type) {
     selectedBase.resources.food -= 10;
     selectedBase.resources.water -= 5;
 
-    const colonist = planet.createColonist(selectedBase.angle + 0.01);
+    const colonist = planet.createColonist(selectedBase.spawn_angle);
     if (type === "miner") {
       colonist.miningSpeed = { iron: 2, copper: 2 };
     } else if (type === "builder") {
@@ -559,7 +564,6 @@ function updateUIPanel() {
       <strong>Colonist</strong><br>
       State: <span id="colonistState">${currentColonist.state}</span><br>
       Carrying:<br><ul id="colonistCarrying"></ul>
-      <button onclick="buildHabitation()">Build Habitation Module</button>
 
     `;
   } else if (selectedBase && lastUIState.ref !== selectedBase) {
@@ -575,6 +579,7 @@ function updateUIPanel() {
       Colonists: ${planet.colonists.length}/${5 * planet.buildings.filter(b => b.type === "hab").length + 10 * planet.buildings.filter(b => b.type === "base").length}<br>
       <button id="spawnSpecialist_miner">Create Miner</button><br>
       <button id="spawnSpecialist_builder">Create Builder</button>
+      <button onclick="buildHabitation()">Build Habitation Module</button>
     `;
 
     document.getElementById("spawnSpecialist_miner").onclick = () => spawnSpecialist('miner');
