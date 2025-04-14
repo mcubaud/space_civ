@@ -123,11 +123,12 @@ function lightenColor(hex, percent) {
 }
 
 class Factory {
-  constructor(type, inputResources, outputResources, requiredResources) {
+  constructor(type, inputResources, outputResources, requiredResources, base) {
     this.type = type;
     this.inputResources = inputResources;
     this.outputResources = outputResources;
     this.requiredResources = requiredResources;//for the construction
+    this.base = base;
     this.workers = 0;
   }
 
@@ -152,8 +153,8 @@ class Factory {
 }
 
 class Farm extends Factory {
-  constructor() {
-    super('farm', { water: 2 }, { food: 1 }, {silicon : 50});
+  constructor(base) {
+    super('farm', { water: 2 }, { food: 1 }, {silicon : 50}, base);
   }
 }
 
@@ -495,14 +496,14 @@ function buildHabitation() {
 }
 
 // List of unlocked factories
-var unlockedFactories = [Farm];
+var unlockedFactories = {"farm":Farm};
 
 // Function to build a factory
 function buildFactory(factoryClass) {
   if (!selectedBase) return;
   const planet = planets.find(p => p.buildings.includes(selectedBase));
 
-  const factory = new factoryClass();
+  const factory = new factoryClass(selectedBase);
   const requiredResources = factory.requiredResources;
 
   let canBuild = true;
@@ -692,12 +693,12 @@ function update() {
 
   // Apply global camera transform
   ctx.setTransform(zoom, 0, 0, zoom, panX, panY);
-  
+
   for (let planet of planets) {
     planet.draw();
     for (let building of planet.buildings) {
       if (building.factory) {
-        building.factory.process(building.resources);
+        building.factory.process(building.factory.base.resources);
       }
     }
   }
