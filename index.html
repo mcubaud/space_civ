@@ -176,6 +176,16 @@ class Planet {
     return r;
   }
 
+  getSurfacePosition(angle) {
+    const r = this.planetRadius(angle);
+    return {
+      x: this.center.x + r * Math.cos(angle),
+      y: this.center.y + r * Math.sin(angle),
+      angle: angle,
+      radius: r,
+    };
+  }
+
   drawImageAt(angle, size, drawFn) {
     const pos = this.getSurfacePosition(angle);
     ctx.save();
