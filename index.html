@@ -390,10 +390,10 @@ function generatePlanets(n = 5) {
   for (let i = 0; i < n; i++) {
     let tries = 0;
     while (tries < maxTries) {
-      let baseRadius = 500 + Math.random() * 500;
+      let baseRadius = 1000 + Math.random() * 500;
       let amplitude = 20 + Math.random() * 20;
-      let x = Math.random() * 2000 + 200;
-      let y = Math.random() * 1000 + 200;
+      let x = Math.random() * 30000 - 15000;
+      let y = Math.random() * 12000 - 6000;
 
       const newPlanet = new Planet(x, y, baseRadius, amplitude);
       let tooClose = planets.some(p => {
