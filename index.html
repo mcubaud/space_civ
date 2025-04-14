@@ -295,7 +295,7 @@ class Planet {
       } else if (type === "building") {
 
         var img1 = new Image();
-        img1.src='{obj.type}.png'
+        img1.src=`${obj.type}.png`
         ctx.drawImage(img1, -50, -50, 100, 100)
         //ctx.fillStyle = "#e76f51";
         //ctx.beginPath();
