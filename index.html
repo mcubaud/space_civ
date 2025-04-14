@@ -193,7 +193,7 @@ class Planet {
       moving: false,
       carrying: {},
       capacity: 20,
-      moveSpeed: 0.05,
+      moveSpeed: 0.01,
       hp: 100,
       attack: 1,
       miningSpeed: { "iron": 2 },
@@ -447,13 +447,13 @@ function buildHabitation() {
     selectedBase.resources.copper -= 30;
 
     selectedBase.number_buldings +=1
-    selectedBase.spawn_angle = selectedBase.angle + selectedBase.number_buldings * (-1)**(selectedBase.number_buldings) *100/planet.baseRadius
 
     planet.buildings.push({
       type: "hab",
-      angle: selectedBase.angle + 0.2 + Math.random() * 0.2,
+      angle: selectedBase.spawn_angle,
       hp: 1000
     });
+    selectedBase.spawn_angle = selectedBase.angle + selectedBase.number_buldings * (-1)**(selectedBase.number_buldings) *100/planet.baseRadius
   } else {
     alert("Not enough resources to build a habitation module!");
   }
