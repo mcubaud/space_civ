@@ -566,6 +566,7 @@ function updateUIPanel() {
     // Switch to base UI
     lastUIState = { type: "base", ref: selectedBase };
     planets.forEach(p => p.selectedColonist = null); // clear selection
+    let planet = planets.find(p => p.buildings.includes(selectedBase));
 
     uiPanel.style.display = "block";
     uiPanel.innerHTML = `
