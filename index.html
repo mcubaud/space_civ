@@ -132,6 +132,15 @@ class Factory {
     this.workers = 0;
   }
 
+  addWorker() {
+    this.workers += 1;
+  }
+
+  removeWorker() {
+    this.workers = Math.max(0, this.workers - 1);
+  }
+
+
   process(baseResources) {
     let canProcess = true;
     for (let resource in this.inputResources) {
@@ -334,7 +343,7 @@ class Planet {
 
         var img1 = new Image();
         img1.src=`${obj.type}.png`
-        ctx.drawImage(img1, -50, -50, 100, 100)
+        ctx.drawImage(img1, -50, -450, 100, 500)
         //ctx.fillStyle = "#e76f51";
         //ctx.beginPath();
         //ctx.moveTo(0, -10);
@@ -520,6 +529,7 @@ function buildFactory(factoryClass) {
       selectedBase.resources[resource] -= requiredResources[resource];
     }
 
+    selectedBase.number_buldings +=1
     planet.buildings.push({
       type: factory.type,
       angle: selectedBase.spawn_angle,
