@@ -50,7 +50,12 @@ let resources_colors = {
   };
 
 let lastUIState = { type: null, ref: null };
+let baseImage;
 
+function preload() {
+  baseImage = loadImage('base.png');
+}
+preload()
 
 canvas.addEventListener("wheel", (e) => {
   e.preventDefault();
@@ -193,7 +198,7 @@ class Planet {
     ctx.save();
     ctx.translate(pos.x, pos.y);
     ctx.rotate(angle + Math.PI / 2);
-    ctx.scale(1 / zoom, 1 / zoom);
+    //ctx.scale(1 / zoom, 1 / zoom);
     drawFn();
     ctx.restore();
   }
@@ -247,13 +252,17 @@ class Planet {
         ctx.rect(-8, -8, 16, 16);
         ctx.fill();
       } else if (type === "building") {
-        ctx.fillStyle = "#e76f51";
-        ctx.beginPath();
-        ctx.moveTo(0, -10);
-        ctx.lineTo(10, 10);
-        ctx.lineTo(-10, 10);
-        ctx.closePath();
-        ctx.fill();
+
+        var img1 = new Image();
+        img1.src="base.png"
+        ctx.drawImage(img1, 0, 0, 100, 100)
+        //ctx.fillStyle = "#e76f51";
+        //ctx.beginPath();
+        //ctx.moveTo(0, -10);
+        //ctx.lineTo(10, 10);
+        //ctx.lineTo(-10, 10);
+        //ctx.closePath();
+        //ctx.fill();
       }
     });
   }
