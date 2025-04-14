@@ -122,6 +122,41 @@ function lightenColor(hex, percent) {
   ).toString(16).slice(1);
 }
 
+class Factory {
+  constructor(type, inputResources, outputResources, requiredResources) {
+    this.type = type;
+    this.inputResources = inputResources;
+    this.outputResources = outputResources;
+    this.requiredResources = requiredResources;//for the construction
+    this.workers = 0;
+  }
+
+  process(baseResources) {
+    let canProcess = true;
+    for (let resource in this.inputResources) {
+      if (baseResources[resource] < this.inputResources[resource] * this.workers) {
+        canProcess = false;
+        break;
+      }
+    }
+
+    if (canProcess) {
+      for (let resource in this.inputResources) {
+        baseResources[resource] -= this.inputResources[resource] * this.workers;
+      }
+      for (let resource in this.outputResources) {
+        baseResources[resource] = (baseResources[resource] || 0) + this.outputResources[resource] * this.workers;
+      }
+    }
+  }
+}
+
+class Farm extends Factory {
+  constructor() {
+    super('farm', { water: 2 }, { food: 1 }, {silicon : 50});
+  }
+}
+
 
 // ===== ⭐ MODULAR: Planet Class =====
 class Planet {
@@ -459,6 +494,42 @@ function buildHabitation() {
   }
 }
 
+// List of unlocked factories
+var unlockedFactories = [Farm];
+
+// Function to build a factory
+function buildFactory(factoryClass) {
+  if (!selectedBase) return;
+  const planet = planets.find(p => p.buildings.includes(selectedBase));
+
+  const factory = new factoryClass();
+  const requiredResources = factory.requiredResources;
+
+  let canBuild = true;
+  for (let resource in requiredResources) {
+    if ((selectedBase.resources[resource] || 0) < requiredResources[resource]) {
+      canBuild = false;
+      alert(`Not enough ${resource} : ${selectedBase.resources[resource] || 0}/${requiredResources[resource]}`)
+      break;
+    }
+  }
+
+  if (canBuild) {
+    for (let resource in requiredResources) {
+      selectedBase.resources[resource] -= requiredResources[resource];
+    }
+
+    planet.buildings.push({
+      type: factory.type,
+      angle: selectedBase.spawn_angle,
+      hp: 1000,
+      factory: factory
+    });
+    selectedBase.spawn_angle = selectedBase.spawn_angle + selectedBase.number_buldings * (-1)**(selectedBase.number_buldings) *100/planet.baseRadius
+  } else {
+    alert("Not enough resources to build this factory!");
+  }
+}
 
 
 // ===== ⭐ MODULAR: Create Multiple Planets =====
@@ -564,7 +635,6 @@ function updateUIPanel() {
       <strong>Colonist</strong><br>
       State: <span id="colonistState">${currentColonist.state}</span><br>
       Carrying:<br><ul id="colonistCarrying"></ul>
-
     `;
   } else if (selectedBase && lastUIState.ref !== selectedBase) {
     // Switch to base UI
@@ -580,6 +650,7 @@ function updateUIPanel() {
       <button id="spawnSpecialist_miner">Create Miner</button><br>
       <button id="spawnSpecialist_builder">Create Builder</button>
       <button onclick="buildHabitation()">Build Habitation Module</button>
+      <button onclick="buildFactory(Farm)">Build Farm</button>
     `;
 
     document.getElementById("spawnSpecialist_miner").onclick = () => spawnSpecialist('miner');
@@ -620,13 +691,15 @@ function update() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   // Apply global camera transform
-  
-
   ctx.setTransform(zoom, 0, 0, zoom, panX, panY);
-
-
+  
   for (let planet of planets) {
     planet.draw();
+    for (let building of planet.buildings) {
+      if (building.factory) {
+        building.factory.process(building.resources);
+      }
+    }
   }
   updateUIPanel();
   requestAnimationFrame(update);
