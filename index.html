@@ -41,13 +41,34 @@ let zoom = 1;
 let panX = 0, panY = 0;
 let isDragging = false;
 let lastMouseX = 0, lastMouseY = 0;
-let list_resources = ['iron', 'copper', 'food', 'water'];
+let list_resources = ['iron', 'copper', 'food', 'water', 'silicon', 'gold', 'crystal'];
 let resources_colors = {
-	'iron':"#99aaad",
-  'copper':"#f2a049",
-  'food':'#07ab2a',
-  'water':'#0048ff'
-  };
+  iron: "#99aaad",
+  copper: "#f2a049",
+  food: "#07ab2a",
+  water: "#0048ff",
+  silicon: "#cccccc",
+  gold: "#ffd700",
+  crystal: "#00ffff"
+};
+
+var planetTypes = ['desert', 'jungle', 'lava', 'ice', 'rocky'];
+
+var planetColors = {
+  desert: '#d2b48c',
+  jungle: '#228b22',
+  lava: '#ff4500',
+  ice: '#add8e6',
+  rocky: '#888888'
+};
+
+var resourceBias = {
+  desert: ['iron', 'silicon', 'silicon', 'silicon', 'gold'],
+  jungle: ['food','food','food','food','water','water', 'water', 'crystal'],
+  lava: ['iron', 'iron', 'iron', 'copper', 'gold'],
+  ice: ['water', 'water', 'water', 'water', 'crystal', 'crystal', 'silicon'],
+  rocky: ['iron', 'copper', 'copper', 'silicon']
+};
 
 let lastUIState = { type: null, ref: null };
 
@@ -87,9 +108,26 @@ canvas.addEventListener("mousemove", (e) => {
 canvas.addEventListener("mouseup", () => isDragging = false);
 canvas.addEventListener("mouseleave", () => isDragging = false);
 
+function lightenColor(hex, percent) {
+  let num = parseInt(hex.replace('#', ''), 16),
+      amt = Math.round(2.55 * percent),
+      R = (num >> 16) + amt,
+      G = (num >> 8 & 0x00FF) + amt,
+      B = (num & 0x0000FF) + amt;
+  return "#" + (
+    0x1000000 +
+    (R < 255 ? R<1?0:R : 255)*0x10000 +
+    (G < 255 ? G<1?0:G : 255)*0x100 +
+    (B < 255 ? B<1?0:B : 255)
+  ).toString(16).slice(1);
+}
+
+
 // ===== ⭐ MODULAR: Planet Class =====
 class Planet {
   constructor(x, y, baseRadius = 120, amplitude = 20) {
+    this.type = planetTypes[Math.floor(Math.random() * planetTypes.length)];
+    this.color = planetColors[this.type];
     this.center = { x, y };
     this.baseRadius = baseRadius;
     this.amplitude = amplitude;
@@ -113,9 +151,15 @@ class Planet {
     ];
 
     
-    this.spawnResource(list_resources[Math.floor(list_resources.length * Math.random())], Math.random() * Math.PI * 2, 100);
-    this.spawnResource(list_resources[Math.floor(list_resources.length * Math.random())], Math.random() * Math.PI * 2, 100);
-    this.spawnResource(list_resources[Math.floor(list_resources.length * Math.random())], Math.random() * Math.PI * 2, 100);
+    let numResources = Math.floor(this.baseRadius / 100) + 2 + Math.random() * 5;
+    for (let i = 0; i < numResources; i++) {
+      let biasedList = resourceBias[this.type];
+      let type = biasedList[Math.floor(Math.random() * biasedList.length)];
+      let angle = Math.random() * Math.PI * 2;
+      let stock = 200 + Math.floor(Math.random() * 300); // More stock
+      this.spawnResource(type, angle, stock);
+    }
+
   }
 
   spawnBase(angle) {
@@ -211,9 +255,9 @@ class Planet {
       else ctx.lineTo(x, y);
     }
     ctx.closePath();
-    ctx.fillStyle = "#264653";
+    ctx.fillStyle = this.color; 
     ctx.fill();
-    ctx.strokeStyle = "#2a9d8f";
+    ctx.strokeStyle = lightenColor(this.color, 20);
     ctx.lineWidth = 2 / zoom;
     ctx.stroke();
     ctx.restore();
