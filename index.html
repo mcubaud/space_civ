@@ -262,8 +262,8 @@ class Planet {
     if (c.moving) {
       let diff = c.targetAngle - c.currentAngle;
       diff = Math.atan2(Math.sin(diff), Math.cos(diff));
-      if (Math.abs(diff) > c.moveSpeed) {
-        c.currentAngle += Math.sign(diff) * c.moveSpeed;
+      if (Math.abs(diff) > c.moveSpeed/this.baseRadius*100) {
+        c.currentAngle += Math.sign(diff) * c.moveSpeed/this.baseRadius*100;
       } else {
         c.currentAngle = c.targetAngle;
         c.moving = false;
