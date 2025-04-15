@@ -108,6 +108,29 @@ canvas.addEventListener("mousemove", (e) => {
 canvas.addEventListener("mouseup", () => isDragging = false);
 canvas.addEventListener("mouseleave", () => isDragging = false);
 
+document.onkeydown=function(e){
+  if(e.key === "Escape"){
+    planets.forEach(p=>{
+      p.selectedColonist=null;
+    });
+    selectedBase = null;
+    
+  }
+  if(e.key === "i"){
+    //find an idle colonist
+    planets.forEach(p=>{
+      p.colonists.filter(x => x !== p.selectedColonist).forEach(c=>{
+        if((c.state === "idle")){
+          p.selectedColonist = c;
+          return
+        }
+      });
+      return
+    });
+    
+  }
+}
+
 function lightenColor(hex, percent) {
   let num = parseInt(hex.replace('#', ''), 16),
       amt = Math.round(2.55 * percent),
