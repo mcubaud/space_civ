@@ -41,7 +41,7 @@ let zoom = 1;
 let panX = 0, panY = 0;
 let isDragging = false;
 let lastMouseX = 0, lastMouseY = 0;
-let list_resources = ['iron', 'copper', 'food', 'water', 'silicon', 'gold', 'crystal'];
+let list_resources = ['iron', 'copper', 'food', 'water', 'silicon', 'gold', 'crystal', 'structite'];
 let resources_colors = {
   iron: "#99aaad",
   copper: "#f2a049",
@@ -49,7 +49,8 @@ let resources_colors = {
   water: "#0048ff",
   silicon: "#cccccc",
   gold: "#ffd700",
-  crystal: "#00ffff"
+  crystal: "#00ffff",
+  structite: "#cc6600"
 };
 
 var planetTypes = ['desert', 'jungle', 'lava', 'ice', 'rocky'];
@@ -63,11 +64,11 @@ var planetColors = {
 };
 
 var resourceBias = {
-  desert: ['iron', 'iron','silicon', 'silicon', 'silicon', 'gold', 'gold', 'food'],
-  jungle: ['food','food','food','food','water','water', 'water', 'crystal'],
-  lava: ['iron', 'iron', 'iron', 'copper', 'gold'],
-  ice: ['water', 'water', 'water', 'water', 'crystal', 'crystal', 'silicon'],
-  rocky: ['iron','iron', 'copper', 'copper', 'silicon', 'silicon', 'water']
+  desert: ['iron', 'iron','silicon', 'silicon', 'silicon', 'gold', 'gold', 'food', 'structite', 'structite'],
+  jungle: ['food','food','food','food','water','water', 'water', 'crystal', 'structite'],
+  lava: ['iron', 'iron', 'iron', 'copper', 'gold', 'structite', 'structite'],
+  ice: ['water', 'water', 'water', 'water', 'crystal', 'crystal', 'silicon', 'structite'],
+  rocky: ['iron','iron', 'copper', 'copper', 'silicon', 'silicon', 'water', 'structite', 'structite']
 };
 
 let lastUIState = { type: null, ref: null };
@@ -192,7 +193,12 @@ class Factory {
 
 class Farm extends Factory {
   constructor(base) {
-    super('farm', { water: 2 }, { food: 1 }, {silicon : 50}, base);
+    super('farm', { water: 2 }, { food: 1 }, {structium : 50}, base);
+  }
+}
+class Lab extends Factory {
+  constructor(base) {
+    super('lab', { }, { science: 1 }, {structium : 50}, base);
   }
 }
 
@@ -544,12 +550,10 @@ function buildHabitation() {
   if (!selectedBase) return;
   const planet = planets.find(p => p.buildings.includes(selectedBase));
 
-  const iron = selectedBase.resources.iron || 0;
-  const copper = selectedBase.resources.copper || 0;
+  const structium = selectedBase.resources.structium || 0;
 
-  if (iron >= 50 && copper >= 30) {
-    selectedBase.resources.iron -= 50;
-    selectedBase.resources.copper -= 30;
+  if (structium >=50) {
+    selectedBase.resources.structium -= 50;
 
     selectedBase.number_buldings +=1
 
@@ -726,8 +730,8 @@ function updateUIPanel() {
       Create colonist :
       <button id="spawnSpecialist_miner">Create Miner</button>
       <button id="spawnSpecialist_soldier">Create Soldier</button> (10 food, 5 water)<br>
-      <button onclick="buildHabitation()">Build Habitation Module</button> (50 iron, 30 copper)<br>
-      <button onclick="buildFactory(Farm)">Build Farm (50 silicon)</button>
+      <button onclick="buildHabitation()">Build Habitation Module</button> (50 structium)<br>
+      <button onclick="buildFactory(Farm)">Build Farm</button> (50 structium)
     `;
 
     document.getElementById("spawnSpecialist_miner").onclick = () => spawnSpecialist('miner');
