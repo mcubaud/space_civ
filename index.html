@@ -152,6 +152,10 @@ function lightenColor(hex, percent) {
   ).toString(16).slice(1);
 }
 
+function capitalize(text){
+	return text.charAt(0).toUpperCase()+text.slice(1)
+}
+
 class Factory {
   constructor(type, inputResources, outputResources, requiredResources, base) {
     this.type = type;
@@ -199,6 +203,16 @@ class Farm extends Factory {
 class Lab extends Factory {
   constructor(base) {
     super('lab', { }, { science: 1 }, {structium : 50}, base);
+  }
+}
+class Solar_panels extends Factory {
+  constructor(base) {
+    super('solar_panels', { }, { energy: 1 }, {copper: 50}, base);
+  }
+}
+class Mine extends Factory {
+  constructor(base) {
+    super('mine', {energy: 4}, { copper: 1, iron: 1, gold: 1}, {structium : 100, iron: 50}, base);
   }
 }
 
@@ -569,7 +583,7 @@ function buildHabitation() {
 }
 
 // List of unlocked factories
-var unlockedFactories = {"farm":Farm};
+var unlockedFactories = {"farm":Farm, "lab":Lab, "mine": Mine, "solar_panels":Solar_panels};
 
 // Function to build a factory
 function buildFactory(factoryClass) {
@@ -731,8 +745,17 @@ function updateUIPanel() {
       <button id="spawnSpecialist_miner">Create Miner</button>
       <button id="spawnSpecialist_soldier">Create Soldier</button> (10 food, 5 water)<br>
       <button onclick="buildHabitation()">Build Habitation Module</button> (50 structium)<br>
-      <button onclick="buildFactory(Farm)">Build Farm</button> (50 structium)
     `;
+    for(fact_type in unlockedFactories){
+  	let fact_class = unlockedFactories[fact_type];
+  	uiPanel.innerHTML +=`<button onclick="buildFactory(${capitalize(fact_type)})">Build ${capitalize(fact_type)}</button> (`;
+  	let requiredResources = (new fact_class("")).requiredResources;
+  	for(resource in requiredResources){
+    		uiPanel.innerHTML += `${requiredResources[resource]} ${resource}, `
+  	}
+	uiPanel.innerHTML += ")<br>"
+
+    }
 
     document.getElementById("spawnSpecialist_miner").onclick = () => spawnSpecialist('miner');
     document.getElementById("spawnSpecialist_soldier").onclick = () => spawnSpecialist('soldier');
