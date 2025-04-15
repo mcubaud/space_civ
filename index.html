@@ -250,7 +250,7 @@ class Planet {
 
   planetRadius(angle) {
     let r = this.baseRadius;
-
+    angle = angle%(Math.PI*2);
     // Sum of sinusoidal functions
     r += this.amplitude * (
       0.7 * Math.sin(this.baseRadius/100 * angle + this.offset1) +
@@ -272,11 +272,11 @@ class Planet {
   }
 
   getSurfacePosition(angle) {
-    const r = this.planetRadius(angle);
+    const r = this.planetRadius(angle%(Math.PI*2));
     return {
       x: this.center.x + r * Math.cos(angle),
       y: this.center.y + r * Math.sin(angle),
-      angle: angle,
+      angle: angle%(Math.PI*2),
       radius: r,
     };
   }
@@ -357,12 +357,17 @@ class Planet {
 
   updateColonist(c) {
     if (c.moving) {
-      let diff = c.targetAngle - c.currentAngle;
+      let diff = (c.targetAngle - c.currentAngle)%(Math.PI*2);
+      if(diff>Math.PI){
+        diff= 2*Math.PI - diff
+      }
       diff = Math.atan2(Math.sin(diff), Math.cos(diff));
       if (Math.abs(diff) > c.moveSpeed/this.baseRadius*100) {
         c.currentAngle += Math.sign(diff) * c.moveSpeed/this.baseRadius*100;
+        c.angle = c.currentAngle%(Math.PI*2);
       } else {
-        c.currentAngle = c.targetAngle;
+        c.currentAngle = c.targetAngle%(Math.PI*2);;
+        c.angle = c.currentAngle%(Math.PI*2);;
         c.moving = false;
       }
       return;
@@ -379,18 +384,18 @@ class Planet {
         console.log(c.carrying, c.capacity, c.targetResource.stock)
         if(c.capacity<=0){ 
         	c.state = "to_base";
-          c.targetAngle = c.base.angle;
+          c.targetAngle = c.base.angle%(Math.PI*2);;
           c.moving = true;
         }
         
         // REMOVE depleted resource
         if (c.targetResource.stock <= 0) {
           const index = this.resources.indexOf(c.targetResource);
-          c.targetResource.list_miners.forEach(c2=> {console.log(c2); c2.state="idle"; c2.targetAngle = c2.base.angle; c2.targetResource=null})
+          c.targetResource.list_miners.forEach(c2=> {console.log(c2); c2.state="idle"; c2.targetAngle = c2.base.angle%(Math.PI*2);c2.targetResource=null})
           if (index !== -1) this.resources.splice(index, 1);
           c.targetResource = null;
           c.state = "to_base";
-          c.targetAngle = c.base.angle;
+          c.targetAngle = c.base.angle%(Math.PI*2);
         }
       }
     } else if (c.state === "to_base" && !c.moving) {
@@ -403,7 +408,7 @@ class Planet {
       c.carrying = {};
       c.capacity = 20;
       if(c.targetResource){
-      	c.targetAngle = c.targetResource.angle;
+      	c.targetAngle = c.targetResource.angle%(Math.PI*2);;
         c.state = "mining";
         c.moving = true;
       }else{
@@ -417,10 +422,10 @@ class Planet {
     const dx = x - this.center.x;
     const dy = y - this.center.y;
     const clickDist = Math.sqrt(dx * dx + dy * dy);
-    const angle = Math.atan2(dy, dx);
+    const angle = Math.atan2(dy, dx)%(Math.PI*2);
     const surfaceR = this.planetRadius(angle);
 
-    if (Math.abs(clickDist - surfaceR) < 50) {
+    if (Math.abs(clickDist - surfaceR) < 500) {
       const pos = this.getSurfacePosition(angle);
 
       // Move colonist or assign task
@@ -437,7 +442,7 @@ class Planet {
             this.selectedColonist.state = "mining";
             this.selectedColonist.targetResource = r;
             r.list_miners.push(this.selectedColonist);
-            this.selectedColonist.targetAngle = r.angle;
+            this.selectedColonist.targetAngle = r.angle%(Math.PI*2);;
             this.selectedColonist.moving = true;
             this.selectedColonist = null;
             return true;
@@ -468,6 +473,7 @@ class Planet {
     // Click building
     for (let b of this.buildings) {
       const bPos = this.getSurfacePosition(b.angle);
+      //TODO replace this with angular distance
       if (Math.hypot(bPos.x - x, bPos.y - y) < 50) {
         selectedBase = b;
         this.selectedColonist = null;
