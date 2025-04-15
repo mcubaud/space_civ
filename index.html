@@ -463,6 +463,9 @@ class Planet {
             	let r2=this.selectedColonist.targetResource;
               r2.list_miners = r2.list_miners.filter(x => x !== this.selectedColonist);
             } 
+            if (this.selectedColonist.assignedFactory) {
+              this.selectedColonist.assignedFactory.removeWorker();
+            }
             this.selectedColonist.state = "mining";
             this.selectedColonist.targetResource = r;
             r.list_miners.push(this.selectedColonist);
@@ -492,7 +495,10 @@ class Planet {
         if(this.selectedColonist.targetResource){
             	let r2=this.selectedColonist.targetResource;
               r2.list_miners = r2.list_miners.filter(x => x !== this.selectedColonist);
-            } 
+            }
+        if (this.selectedColonist.assignedFactory) {
+          this.selectedColonist.assignedFactory.removeWorker();
+        } 
         this.selectedColonist.state = "idle"
 				this.selectedColonist.targetResource = null;
         this.selectedColonist.targetAngle = angle;
