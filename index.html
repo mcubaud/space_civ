@@ -306,9 +306,11 @@ class Planet {
 
   drawImageAt(angle, size, drawFn) {
     const pos = this.getSurfacePosition(angle);
+  	const pos2 = this.getSurfacePosition(angle+0.01);
     ctx.save();
     ctx.translate(pos.x, pos.y);
-    ctx.rotate(angle + Math.PI / 2);//TODO local normal angle instead
+  	const rot_angle = Math.atan2(pos2.y - pos.y, pos2.x -pos.x)
+    ctx.rotate(rot_angle);
     drawFn();
     ctx.restore();
   }
