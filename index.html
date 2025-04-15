@@ -131,15 +131,9 @@ document.onkeydown=function(e){
   }
   if(e.key === "+"){
 	zoom*=1.1;
-	// Adjust pan to keep zoom centered at mouse
-	panX = mouseX - worldX * zoom;
-	panY = mouseY - worldY * zoom;
     }
     if(e.key === "-"){
       	zoom/=1.1;
-	// Adjust pan to keep zoom centered at mouse
-	  panX = mouseX - worldX * zoom;
-	  panY = mouseY - worldY * zoom;
     }
 }
 
