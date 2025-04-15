@@ -633,6 +633,7 @@ panY = document.querySelector("body").clientHeight/2 - base_pos.y * zoom
 
 const uiPanel = document.getElementById("uiPanel");
 let selectedBase = null;
+let selectedBuilding = null;
 
 
 // ===== Handle Clicks Delegated to Planets =====
@@ -686,6 +687,7 @@ function updateUIPanel() {
     // Switch to colonist UI
     lastUIState = { type: "colonist", ref: currentColonist };
     selectedBase = null;
+    selectedBuilding = null;
 
     uiPanel.style.display = "block";
     uiPanel.innerHTML = `
@@ -712,7 +714,18 @@ function updateUIPanel() {
 
     document.getElementById("spawnSpecialist_miner").onclick = () => spawnSpecialist('miner');
     document.getElementById("spawnSpecialist_builder").onclick = () => spawnSpecialist('builder');
-  } else if (!currentColonist && !selectedBase) {
+  }else if (selectedBuilding && lastUIState.ref !== selectedBuilding) {
+    // Switch to base UI
+    lastUIState = { type: selectedBuilding.type, ref: selectedBuilding };
+    planets.forEach(p => p.selectedColonist = null); // clear selection
+    uiPanel.style.display = "block";
+    uiPanel.innerHTML = `
+      <strong>${selectedBuilding.type}</strong><br>
+    `;
+    if(selectedBuilding.factory){
+      uiPanel.innerHTML+=`Number of workers: ${selectedBuilding.factory.workers}<br>`
+    }
+  } else if (!currentColonist && !selectedBase && !selectedBuilding) {
     // Nothing selected
     if (lastUIState.type !== null) {
       uiPanel.style.display = "none";
