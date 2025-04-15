@@ -127,13 +127,20 @@ document.onkeydown=function(e){
       });
       return
     });
-    if(e.key === "+"){
-      zoom*=1.1;
+    
+  }
+  if(e.key === "+"){
+	zoom*=1.1;
+	// Adjust pan to keep zoom centered at mouse
+	panX = mouseX - worldX * zoom;
+	panY = mouseY - worldY * zoom;
     }
     if(e.key === "-"){
-      zoom/=1.1;
+      	zoom/=1.1;
+	// Adjust pan to keep zoom centered at mouse
+	  panX = mouseX - worldX * zoom;
+	  panY = mouseY - worldY * zoom;
     }
-  }
 }
 
 function lightenColor(hex, percent) {
