@@ -345,7 +345,7 @@ class Planet {
   drawObject(obj, type) {
     this.drawImageAt(obj.currentAngle ?? obj.angle, 20, () => {
       if (type === "colonist") {
-        ctx.fillStyle = "#e9c46a";
+        ctx.fillStyle = obj.color ?? "#e9c46a";
         ctx.beginPath();
         ctx.arc(0, 0, 10, 0, Math.PI * 2);
         ctx.fill();
@@ -668,8 +668,11 @@ function spawnSpecialist(type) {
     const colonist = planet.createColonist(selectedBase.spawn_angle);
     if (type === "miner") {
       colonist.miningSpeed = { iron: 2, copper: 2 };
-    } else if (type === "builder") {
+    } else if (type === "soldier") {
       colonist.miningSpeed = {};
+      colonist.hp = 120;
+      colonist.attack = 100;
+      colonist.color = "#ff0000";
     }
     planet.colonists.push(colonist);
   } else {
@@ -706,14 +709,15 @@ function updateUIPanel() {
       <strong>Base</strong><br>
       Resources:<br><ul id="baseResources"></ul>
       Colonists: ${planet.colonists.length}/${5 * planet.buildings.filter(b => b.type === "hab").length + 10 * planet.buildings.filter(b => b.type === "base").length}<br>
-      <button id="spawnSpecialist_miner">Create Miner</button><br>
-      <button id="spawnSpecialist_builder">Create Builder</button>
-      <button onclick="buildHabitation()">Build Habitation Module</button>
-      <button onclick="buildFactory(Farm)">Build Farm</button>
+      Create colonist :
+      <button id="spawnSpecialist_miner">Create Miner</button>
+      <button id="spawnSpecialist_soldier">Create Soldier</button> (10 food, 5 water)<br>
+      <button onclick="buildHabitation()">Build Habitation Module</button> (50 iron, 30 copper)<br>
+      <button onclick="buildFactory(Farm)">Build Farm (50 silicon)</button>
     `;
 
     document.getElementById("spawnSpecialist_miner").onclick = () => spawnSpecialist('miner');
-    document.getElementById("spawnSpecialist_builder").onclick = () => spawnSpecialist('builder');
+    document.getElementById("spawnSpecialist_soldier").onclick = () => spawnSpecialist('soldier');
   }else if (selectedBuilding && lastUIState.ref !== selectedBuilding) {
     // Switch to base UI
     lastUIState = { type: selectedBuilding.type, ref: selectedBuilding };
