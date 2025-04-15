@@ -41,7 +41,7 @@ let zoom = 1;
 let panX = 0, panY = 0;
 let isDragging = false;
 let lastMouseX = 0, lastMouseY = 0;
-let list_resources = ['iron', 'copper', 'food', 'water', 'silicon', 'gold', 'crystal', 'structite'];
+let list_resources = ['iron', 'copper', 'food', 'water', 'silicon', 'gold', 'crystal', 'structium'];
 let resources_colors = {
   iron: "#99aaad",
   copper: "#f2a049",
@@ -50,7 +50,7 @@ let resources_colors = {
   silicon: "#cccccc",
   gold: "#ffd700",
   crystal: "#00ffff",
-  structite: "#cc6600"
+  structium: "#cc6600"
 };
 
 var planetTypes = ['desert', 'jungle', 'lava', 'ice', 'rocky'];
@@ -64,11 +64,11 @@ var planetColors = {
 };
 
 var resourceBias = {
-  desert: ['iron', 'iron','silicon', 'silicon', 'silicon', 'gold', 'gold', 'food', 'structite', 'structite'],
-  jungle: ['food','food','food','food','water','water', 'water', 'crystal', 'structite'],
-  lava: ['iron', 'iron', 'iron', 'copper', 'gold', 'structite', 'structite'],
-  ice: ['water', 'water', 'water', 'water', 'crystal', 'crystal', 'silicon', 'structite'],
-  rocky: ['iron','iron', 'copper', 'copper', 'silicon', 'silicon', 'water', 'structite', 'structite']
+  desert: ['iron', 'iron','silicon', 'silicon', 'silicon', 'gold', 'gold', 'food', 'structium', 'structium'],
+  jungle: ['food','food','food','food','water','water', 'water', 'crystal', 'structium'],
+  lava: ['iron', 'iron', 'iron', 'copper', 'gold', 'structium', 'structium'],
+  ice: ['water', 'water', 'water', 'water', 'crystal', 'crystal', 'silicon', 'structium'],
+  rocky: ['iron','iron', 'copper', 'copper', 'silicon', 'silicon', 'water', 'structium', 'structium']
 };
 
 let lastUIState = { type: null, ref: null };
