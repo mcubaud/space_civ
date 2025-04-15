@@ -308,8 +308,7 @@ class Planet {
     const pos = this.getSurfacePosition(angle);
     ctx.save();
     ctx.translate(pos.x, pos.y);
-    ctx.rotate(angle + Math.PI / 2);
-    //ctx.scale(1 / zoom, 1 / zoom);
+    ctx.rotate(angle + Math.PI / 2);//TODO local normal angle instead
     drawFn();
     ctx.restore();
   }
@@ -471,6 +470,22 @@ class Planet {
             return true;
           }
         }
+        for (let b of this.buildings) {
+          const bPos = this.getSurfacePosition(b.angle);
+          if (Math.hypot(bPos.x - x, bPos.y - y) < 50 && b.factory) {
+            any_close = true;
+            if (this.selectedColonist.assignedFactory) {
+              this.selectedColonist.assignedFactory.removeWorker();
+            }
+            this.selectedColonist.assignedFactory = b.factory;
+            b.factory.addWorker();
+            this.selectedColonist.state = "working";
+            this.selectedColonist.targetAngle = b.angle;
+            this.selectedColonist.moving = true;
+            this.selectedColonist = null;
+            return true;
+          }
+        }
         
         if(this.selectedColonist.targetResource){
             	let r2=this.selectedColonist.targetResource;
@@ -498,7 +513,9 @@ class Planet {
       const bPos = this.getSurfacePosition(b.angle);
       //TODO replace this with angular distance
       if (Math.hypot(bPos.x - x, bPos.y - y) < 50) {
-        selectedBase = b;
+        if(b.type == "base"){
+          selectedBase = b;
+        }
         this.selectedColonist = null;
         if (b.onClick) b.onClick();
         return true;
