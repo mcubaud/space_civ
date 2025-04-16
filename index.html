@@ -115,6 +115,7 @@ document.onkeydown=function(e){
       p.selectedColonist=null;
     });
     selectedBase = null;
+    selectedSpaceship = null;
     
   }
   if(e.key === "i"){
@@ -128,6 +129,11 @@ document.onkeydown=function(e){
       });
       return
     });
+    
+  }
+  if(e.key === "s"){
+    //find an idle colonist
+    selectedSpaceship = spaceships.find(s=>!s.moving);
     
   }
   if(e.key === "+"){
