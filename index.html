@@ -198,6 +198,17 @@ class Spaceship {
 					this.landed=true;
 					this.landedPlanet.spaceships.push(this);
 					this.rot_angle = this.angle+Math.PI/2;
+					if(!this.landedPlanet.buildings.find(b => b.type === "base")){
+						for(let c of this.landedPlanet.colonists){
+							if(!c.base){
+								c.base=this;
+								if(c.state=="idle" && c.resources){
+									c.state="to_base";
+									c.moving=true;
+								}
+							}
+						}
+					}
 				}
       }
     }
