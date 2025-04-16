@@ -184,19 +184,55 @@ class Spaceship {
         this.x = this.targetX;
         this.y = this.targetY;
         this.moving = false;
+	if(this.landedPLanet){
+		this.landed=true;
+		this.landedPLanet.spaceships.push(this);
+	}
       }
     }
   }
 
-  landOnPlanet(planet) {
-    this.landed = true;
+  checkSelected(x, y){
+     if(Math.sqrt((this.x -x)**2 + (this.y -y)**2)<50){
+	     selectedSpaceship = this;
+	     return true;
+     }
+     return false;
+  }
+
+  handleSpaceshipClick(x, y){
+	for(let p of planets){
+	//check if we clicked inside a planet
+	    const dx = x - p.center.x;
+	    const dy = y - p.center.y;
+	    const clickDist = Math.sqrt(dx * dx + dy * dy);
+	    const angle = Math.atan2(dy, dx)%(Math.PI*2);
+	    const surfaceR = p.planetRadius(angle);
+	    if ((clickDist) < (surfaceR + 500)) {
+		    this.landOnPlanet(p, angle);
+		    return true
+		}
+	}
+	//else move in space
+	this.targetX = x;
+	this.targetY = y;
+	this.moving = true;
+	if(this.landed){
+		this.takeOff();
+	}
+  }
+
+  landOnPlanet(planet, angle) {
+    var pos = planet.getSurfacePosition(angle)
+    //this.landed = true;
     this.landedPlanet = planet;
-    this.targetX = planet.center.x;
-    this.targetY = planet.center.y;
+    this.targetX = pos.x;
+    this.targetY = pos.y;
     this.moving = true;
   }
 
   takeOff() {
+    this.landedPLanet.spaceships = his.landedPLanet.spaceships.filter(x=>x!=this);
     this.landed = false;
     this.landedPlanet = null;
   }
@@ -233,6 +269,9 @@ class Spaceship {
   }
 
   draw() {
+    if(this.moving){
+	this.move();
+    }
     ctx.save();
     ctx.translate(this.x, this.y);
     ctx.fillStyle = "#ffffff";
@@ -322,7 +361,7 @@ class Planet {
     this.resources = [];
     this.buildings = [];
     this.selectedColonist = null;
-    this.spaceship = null; // Reference to the spaceship if landed
+    this.spaceships = []; // Reference to the spaceship if landed
 
     this.mountainPeaks = [
       Math.random() * Math.PI * 2,
@@ -457,9 +496,6 @@ class Planet {
       this.drawObject(c, "colonist");
     });
 
-    if (this.spaceship) {
-      this.spaceship.draw();
-    }
   }
 
   drawObject(obj, type) {
@@ -642,25 +678,6 @@ class Planet {
     return false;
   }
 
-  handleSpaceshipClick(x, y) {
-    if (this.spaceship && this.spaceship.landed) {
-      // Disembark colonists or resources
-      for (let c of this.spaceship.colonists) {
-        if (Math.hypot(c.x - x, c.y - y) < 50) {
-          this.spaceship.disembarkColonist(c, this);
-          return true;
-        }
-      }
-      // TODO: Handle resource disembarkation
-    } else if (this.spaceship) {
-      // Move spaceship
-      this.spaceship.targetX = x;
-      this.spaceship.targetY = y;
-      this.spaceship.moving = true;
-      return true;
-    }
-    return false;
-  }
 }
 
 function buildHabitation() {
@@ -781,13 +798,19 @@ var screenToWorld = (sx, sy) => ({
 
 canvas.addEventListener("click", (e) => {
   const { x, y } = screenToWorld(e.clientX, e.clientY);
-  if (selectedSpaceship) {
+
+  if (selectedSpaceship) {//actions when a spaceship is selected
     if (selectedSpaceship.handleSpaceshipClick(x, y)) return;
   }
-  for (let planet of planets) {
-    if (planet.handleClick(x, y)) return;
-    if (selectedSpaceship && planet.handleSpaceshipClick(x, y)) return;
+  for (let spaceship of spaceships) {
+    //actions to select a spaceship
+    if (spaceship.checkSelected(x, y)) return;
   }
+  for (let planet of planets) {//actions to interact with objects on planets
+    if (planet.handleClick(x, y)) return;
+  }
+
+
 });
 
 function spawnSpecialist(type) {
@@ -943,16 +966,16 @@ function update() {
         building.factory.process(building.factory.base.resources);
       }
     }
-    if (planet.spaceship) {
-      planet.spaceship.move();
-    }
+  }
+  for (let spaceship of spaceships){
+	spaceship.draw()
   }
   updateUIPanel();
   requestAnimationFrame(update);
 }
 
 // Create a spaceship
-var spaceship = new Spaceship(1000, 1000);
+var spaceships = [new Spaceship(1000, 1000)];
 update();
 </script>
 </body>
