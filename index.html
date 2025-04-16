@@ -678,7 +678,7 @@ class Planet {
     }
   }
 
-  handleClick(x, y) {
+  handleRightClick(x, y) {
     const dx = x - this.center.x;
     const dy = y - this.center.y;
     const clickDist = Math.sqrt(dx * dx + dy * dy);
@@ -743,28 +743,40 @@ class Planet {
         return true;
       }
     }
-    // Click colonist
-    for (let c of this.colonists) {
-      const cPos = this.getSurfacePosition(c.currentAngle);
-      if (Math.hypot(cPos.x - x, cPos.y - y) < 50) {
-        this.selectedColonist = c;
-        return true;
-      }
-    }
+return false;
+  }
 
-    // Click building
-    for (let b of this.buildings) {
-      const bPos = this.getSurfacePosition(b.angle);
-      //TODO replace this with angular distance
-      if (Math.hypot(bPos.x - x, bPos.y - y) < 50) {
-        if(b.type == "base"){
-          selectedBase = b;
-        }
-        this.selectedColonist = null;
-        if (b.onClick) b.onClick();
-        return true;
-      }
-    }
+  handleClick(x, y) {
+    const dx = x - this.center.x;
+    const dy = y - this.center.y;
+    const clickDist = Math.sqrt(dx * dx + dy * dy);
+    const angle = Math.atan2(dy, dx)%(Math.PI*2);
+    const surfaceR = this.planetRadius(angle);
+
+    if (Math.abs(clickDist - surfaceR) < 500) {
+      const pos = this.getSurfacePosition(angle);
+	    // Click colonist
+	    for (let c of this.colonists) {
+	      const cPos = this.getSurfacePosition(c.currentAngle);
+	      if (Math.hypot(cPos.x - x, cPos.y - y) < 50) {
+	        this.selectedColonist = c;
+	        return true;
+	      }
+	    }
+
+	    // Click building
+	    for (let b of this.buildings) {
+	      const bPos = this.getSurfacePosition(b.angle);
+	      //TODO replace this with angular distance
+	      if (Math.hypot(bPos.x - x, bPos.y - y) < 50) {
+	        if(b.type == "base"){
+	          selectedBase = b;
+	        }
+	        this.selectedColonist = null;
+	        if (b.onClick) b.onClick();
+	        return true;
+	      }
+	    }
 
     return false;
   }
@@ -887,16 +899,25 @@ var screenToWorld = (sx, sy) => ({
 
 canvas.addEventListener("click", (e) => {
   const { x, y } = screenToWorld(e.clientX, e.clientY);
-
-  if (selectedSpaceship) {//actions when a spaceship is selected
-    if (selectedSpaceship.handleSpaceshipClick(x, y)) return;
-  }
   for (let spaceship of spaceships) {
     //actions to select a spaceship
     if (spaceship.checkSelected(x, y)) return;
   }
   for (let planet of planets) {//actions to interact with objects on planets including spaceship landed
     if (planet.handleClick(x, y)) return;
+  }
+
+
+});
+canvas.addEventListener("contextmenu", (e) => {
+	e.preventDefault();
+  const { x, y } = screenToWorld(e.clientX, e.clientY);
+
+  if (selectedSpaceship) {//actions when a spaceship is selected
+    if (selectedSpaceship.handleSpaceshipClick(x, y)) return;
+  }
+  for (let planet of planets) {//actions to interact with objects on planets including spaceship landed
+    if (planet.handleRightClick(x, y)) return;
   }
 
 
