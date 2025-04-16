@@ -942,8 +942,9 @@ function updateUIPanel() {
     uiPanel.innerHTML = `
       <strong>Spaceship</strong><br>
       Resources:<br><ul id="spaceshipResources"></ul>
-      Colonists: ${selectedSpaceship.colonists.length}/${selectedSpaceship.capacity}<br>
-      <button onclick="selectedSpaceship.takeOff()">Take Off</button><br>
+			<p visibility="hidden" id="placeholderBaseResources">Base Resources:<br><ul id="baseResources"></ul>"</p>
+      Remaining space: ${selectedSpaceship.capacity}<br>
+      Colonists: ${selectedSpaceship.colonists.length}/${selectedSpaceship.colonist_capacity}<br>
     `;
   } else if (!currentColonist && !selectedBase && !selectedBuilding && !selectedSpaceship) {
     // Nothing selected
@@ -977,6 +978,17 @@ function updateUIPanel() {
     for (let type in s.resources) {
       ul.innerHTML += `<li>${type}: ${s.resources[type]}</li>`;
     }
+    if((s.landed) && (s.landedPlanet.buildings.find(b=>b.type==="base")){
+			
+			var base = s.landedPlanet.buildings.find(b=>b.type==="base");
+			doument.getElementById("placeholderBaseResources").visibility = "visible";
+			var ul2 = document.getElementById("baseResources");
+    	ul2.innerHTML = "";
+			for (let type in base.resources) {
+	      ul2.innerHTML += `<li>${type}: ${base.resources[type]}</li>`;
+	    }
+    }
+		//TODO add resource transfert UI
   }
 }
 
