@@ -570,7 +570,7 @@ class Planet {
         var old_amount = c.carrying[c.targetResource.type]??0;
         c.carrying[c.targetResource.type] = old_amount+amount;
         if(c.capacity<=0){
-	  if(c.base instanceOf Spaceship && c.base.capacity<=0){
+	  if((c.base instanceOf Spaceship) && (c.base.capacity<=0)){
 		  c.state = "idle"
 		  c.targetAngle = c.angle + 0.1;
 		  c.moving = true;
