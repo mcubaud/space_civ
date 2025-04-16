@@ -204,7 +204,7 @@ class Spaceship {
      if(Math.sqrt((this.x -x)**2 + (this.y -y)**2)<50){
 	     selectedSpaceship = this;
 	     if(this.landed && this.landedPlanet.selectedColonist){
-		     this.embark_colonist(this.landedPlanet.selectedColonist)
+		     this.embarkColonist(this.landedPlanet.selectedColonist)
 	     }
 	     return true;
      }
