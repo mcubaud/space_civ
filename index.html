@@ -118,6 +118,27 @@ document.onkeydown=function(e){
     selectedSpaceship = null;
     
   }
+	if(e.key ==="c"){
+		if(selectedSpaceship){
+			panX = document.querySelector("body").clientWidth/2 - selectedSpaceship.x * zoom;
+			panY = document.querySelector("body").clientHeight/2 - selectedSpaceship.y * zoom;
+			return
+		}
+		for(let p of planets){
+			if(p.selectedColonist){
+				let pos = p.getSurfacePosition(p.selectedColonist.angle);
+				panX = document.querySelector("body").clientWidth/2 - pos.x * zoom;
+				panY = document.querySelector("body").clientHeight/2 - pos.y * zoom;
+				return
+			}
+			if(selectedBase && p.buildings.find(b=>b==selectedBase){
+				let pos = p.getSurfacePosition(selectedBase.angle);
+				panX = document.querySelector("body").clientWidth/2 - pos.x * zoom;
+				panY = document.querySelector("body").clientHeight/2 - pos.y * zoom;
+				return
+			}
+		}
+	}
   if(e.key === "i"){
     //find an idle colonist
     planets.forEach(p=>{
@@ -137,11 +158,21 @@ document.onkeydown=function(e){
     
   }
   if(e.key === "+"){
-	zoom*=1.1;
-    }
-    if(e.key === "-"){
-      	zoom/=1.1;
-    }
+		const worldX = (document.querySelector("body").clientWidth/2 - panX) / zoom;
+  	const worldY = (document.querySelector("body").clientHeight/2 - panY) / zoom;
+		zoom*=1.1;
+		panX = document.querySelector("body").clientWidth/2 - worldX * zoom;
+  	panY = document.querySelector("body").clientHeight/2 - worldY * zoom;
+	
+	}
+	if(e.key === "-"){
+		const worldX = (document.querySelector("body").clientWidth/2 - panX) / zoom;
+  	const worldY = (document.querySelector("body").clientHeight/2 - panY) / zoom;
+		zoom/=1.1;
+		panX = document.querySelector("body").clientWidth/2 - worldX * zoom;
+  	panY = document.querySelector("body").clientHeight/2 - worldY * zoom;
+	
+	}
 }
 
 function lightenColor(hex, percent) {
