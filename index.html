@@ -545,17 +545,17 @@ class Planet {
 
   updateColonist(c) {
     if (c.moving) {
-      let diff = (c.targetAngle - c.currentAngle)%(Math.PI*2);
-      if(diff>Math.PI){
-        diff= 2*Math.PI - diff
+      let diff = (c.targetAngle - c.currentAngle) % (Math.PI * 2);
+      if (diff > Math.PI) {
+        diff = 2 * Math.PI - diff;
       }
       diff = Math.atan2(Math.sin(diff), Math.cos(diff));
-      if (Math.abs(diff) > c.moveSpeed/this.baseRadius*100) {
-        c.currentAngle += Math.sign(diff) * c.moveSpeed/this.baseRadius*100;
-        c.angle = c.currentAngle%(Math.PI*2);
+      if (Math.abs(diff) > c.moveSpeed / this.baseRadius * 100) {
+        c.currentAngle += Math.sign(diff) * c.moveSpeed / this.baseRadius * 100;
+        c.angle = c.currentAngle % (Math.PI * 2);
       } else {
-        c.currentAngle = c.targetAngle%(Math.PI*2);;
-        c.angle = c.currentAngle%(Math.PI*2);;
+        c.currentAngle = c.targetAngle % (Math.PI * 2);
+        c.angle = c.currentAngle % (Math.PI * 2);
         c.moving = false;
       }
       return;
@@ -565,54 +565,53 @@ class Planet {
     if (c.state === "mining" && c.targetResource) {
       if (c.targetResource.stock > 0) {
         let amount = Math.min(c.miningSpeed[c.targetResource.type] ?? 1, c.capacity, c.targetResource.stock);
-        c.capacity -= amount
+        c.capacity -= amount;
         c.targetResource.stock -= amount;
-        var old_amount = c.carrying[c.targetResource.type]??0;
-        c.carrying[c.targetResource.type] = old_amount+amount;
-        if(c.capacity<=0){
-	  if((c.base instanceof Spaceship) && (c.base.capacity<=0)){
-		  c.state = "idle"
-		  c.targetAngle = c.angle + 0.1;
-		  c.moving = true;
-	  }else{
-	          c.state = "to_base";
-	          c.targetAngle = c.base.angle%(Math.PI*2);
-	          c.moving = true;
-	  }
-     	 }
+        var old_amount = c.carrying[c.targetResource.type] ?? 0;
+        c.carrying[c.targetResource.type] = old_amount + amount;
+        if (c.capacity <= 0) {
+          if ((c.base instanceof Spaceship) && (c.base.capacity <= 0)) {
+            c.state = "idle";
+            c.targetAngle = c.angle + 0.1;
+            c.moving = true;
+          } else {
+            c.state = "to_base";
+            c.targetAngle = c.base.angle % (Math.PI * 2);
+            c.moving = true;
+          }
         }
-        // REMOVE depleted resource
-        if (c.targetResource.stock <= 0) {
-          const index = this.resources.indexOf(c.targetResource);
-          c.targetResource.list_miners.forEach(c2=> {
-            c2.state="idle";
-            c2.targetAngle = c2.base.angle%(Math.PI*2);
-            c2.targetResource=null
-          });
-          if (index !== -1) this.resources.splice(index, 1);
-          c.targetResource = null;
-          c.state = "to_base";
-          c.targetAngle = c.base.angle%(Math.PI*2);
-        }
+      }
+      // REMOVE depleted resource
+      if (c.targetResource.stock <= 0) {
+        const index = this.resources.indexOf(c.targetResource);
+        c.targetResource.list_miners.forEach(c2 => {
+          c2.state = "idle";
+          c2.targetAngle = c2.base.angle % (Math.PI * 2);
+          c2.targetResource = null;
+        });
+        if (index !== -1) this.resources.splice(index, 1);
+        c.targetResource = null;
+        c.state = "to_base";
+        c.targetAngle = c.base.angle % (Math.PI * 2);
       }
     } else if (c.state === "to_base" && !c.moving) {
       // drop off
-      if(c.base instanceof Spaceship){
-	      c.base.embarkResources(c.carrying)
-      }else{
-	      for(let resource_type in c.carrying){
-	        var base_resource_quantity = c.base.resources[resource_type]??0
-	        c.base.resources[resource_type] = base_resource_quantity+ c.carrying[resource_type];
-	      }
+      if (c.base instanceof Spaceship) {
+        c.base.embarkResources(c.carrying);
+      } else {
+        for (let resource_type in c.carrying) {
+          var base_resource_quantity = c.base.resources[resource_type] ?? 0;
+          c.base.resources[resource_type] = base_resource_quantity + c.carrying[resource_type];
+        }
       }
       c.carrying = {};
       c.capacity = 20;
-      if(c.targetResource){
-        c.targetAngle = c.targetResource.angle%(Math.PI*2);;
+      if (c.targetResource) {
+        c.targetAngle = c.targetResource.angle % (Math.PI * 2);
         c.state = "mining";
         c.moving = true;
-      }else{
-        c.state="idle"
+      } else {
+        c.state = "idle";
       }
     }
   }
