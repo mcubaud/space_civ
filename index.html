@@ -741,9 +741,10 @@ function updateUIPanel() {
       <strong>Base</strong><br>
       Resources:<br><ul id="baseResources"></ul>
       Colonists: ${planet.colonists.length}/${5 * planet.buildings.filter(b => b.type === "hab").length + 10 * planet.buildings.filter(b => b.type === "base").length}<br>
-      Create colonist :
+      Create colonist:<br>
       <button id="spawnSpecialist_miner">Create Miner</button>
       <button id="spawnSpecialist_soldier">Create Soldier</button> (10 food, 5 water)<br>
+      Create buildings:<br>
       <button onclick="buildHabitation()">Build Habitation Module</button> (50 structium)<br>
     `;
     for(fact_type in unlockedFactories){
