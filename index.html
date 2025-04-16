@@ -157,18 +157,20 @@ function capitalize(text){
 }
 
 class Spaceship {
-  constructor(x, y) {
+  constructor(x, y, speed=2, capacity=100, colonist_capacity=2) {
     this.x = x;
     this.y = y;
     this.targetX = x;
     this.targetY = y;
     this.moving = false;
-    this.speed = 2; // Speed of the spaceship
-    this.capacity = 100; // Maximum capacity for resources
+    this.speed = speed; // Speed of the spaceship
+    this.capacity = capacity; // Maximum capacity for resources
+    this.colonist_capacity = colonist_capacity;
     this.resources = {}; // Resources carried by the spaceship
     this.colonists = []; // Colonists on board
     this.landed = false; // Whether the spaceship is landed on a planet
     this.landedPlanet = null; // The planet the spaceship is landed on
+    this.angle = null;
   }
 
   move() {
@@ -195,6 +197,9 @@ class Spaceship {
   checkSelected(x, y){
      if(Math.sqrt((this.x -x)**2 + (this.y -y)**2)<50){
 	     selectedSpaceship = this;
+	     if(this.landed && this.landedPlanet.selectedColonist){
+		     this.embark_colonist(this.landedPlanet.selectedColonist)
+	     }
 	     return true;
      }
      return false;
@@ -229,18 +234,20 @@ class Spaceship {
     this.targetX = pos.x;
     this.targetY = pos.y;
     this.moving = true;
+    this.angle = angle;
   }
 
   takeOff() {
     this.landedPLanet.spaceships = his.landedPLanet.spaceships.filter(x=>x!=this);
     this.landed = false;
     this.landedPlanet = null;
+    this.angle = null;
   }
 
   embarkColonist(colonist) {
     if (this.colonists.length < this.capacity) {
       this.colonists.push(colonist);
-      colonist.base.colonists = colonist.base.colonists.filter(c => c !== colonist);
+      this.landedPlanet.colonists = this.landedPlanet.colonists.filter(c => c !== colonist);
     }
   }
 
@@ -249,13 +256,20 @@ class Spaceship {
     if (index !== -1) {
       this.colonists.splice(index, 1);
       planet.colonists.push(colonist);
+      colonist.currentAngle = this.angle;
+      colonist.angle = this.angle;
       colonist.base = planet.buildings.find(b => b.type === "base");
+      if(! colonist.base){
+	      colonist.base = this;
+      }
     }
   }
 
   embarkResources(resources) {
     for (let type in resources) {
-      this.resources[type] = (this.resources[type] || 0) + resources[type];
+      var addedResources = Math.min( resources[type], this.capacity);
+      this.resources[type] = (this.resources[type] || 0) + addedResources;
+      this.capacity -= addedResources;
     }
   }
 
@@ -550,9 +564,13 @@ class Planet {
         var old_amount = c.carrying[c.targetResource.type]??0;
         c.carrying[c.targetResource.type] = old_amount+amount;
         if(c.capacity<=0){
-          c.state = "to_base";
-          c.targetAngle = c.base.angle%(Math.PI*2);;
-          c.moving = true;
+	  if(c.base instanceOf Spaceship){
+		  
+	  }else{
+	          c.state = "to_base";
+	          c.targetAngle = c.base.angle%(Math.PI*2);;
+	          c.moving = true;
+	  }
         }
 
         // REMOVE depleted resource
@@ -789,8 +807,6 @@ let selectedBuilding = null;
 let selectedSpaceship = null;
 
 
-// ===== Handle Clicks Delegated to Planets =====
-
 var screenToWorld = (sx, sy) => ({
   x: (sx - panX)/zoom,
   y: (sy - panY)/zoom,
@@ -806,7 +822,7 @@ canvas.addEventListener("click", (e) => {
     //actions to select a spaceship
     if (spaceship.checkSelected(x, y)) return;
   }
-  for (let planet of planets) {//actions to interact with objects on planets
+  for (let planet of planets) {//actions to interact with objects on planets including spaceship landed
     if (planet.handleClick(x, y)) return;
   }
 
