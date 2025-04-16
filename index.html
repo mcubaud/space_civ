@@ -224,6 +224,7 @@ class Spaceship {
 		    const surfaceR = p.planetRadius(angle);
 		    if ((clickDist) < (surfaceR + 500)) {
 			    this.landOnPlanet(p, angle);
+			    selectedSpaceship = null;
 			    return true
 			}
 		}
@@ -965,7 +966,6 @@ function updateUIPanel() {
       Colonists: ${selectedSpaceship.colonists.length}/${selectedSpaceship.colonist_capacity}<br>
 			<button id="disembarkAll" style="visibility:hidden;">Disembark colonists</button><br>
     `;
-		document.getElementById("disembarkAll").onclick = selectedSpaceship.disembarkAll;
 		
   } else if (!currentColonist && !selectedBase && !selectedBuilding && !selectedSpaceship) {
     // Nothing selected
@@ -1001,6 +1001,15 @@ function updateUIPanel() {
     }
 		if(s.landed){
 			document.getElementById("disembarkAll").style.visibility = "visible";
+			document.getElementById("disembarkAll").onclick = function(e){
+			  console.log(e);
+			  s.disembarkAll();
+			  selectedSpaceship = null;
+			  updateUIPanel();
+			  selectedSpaceship = s;
+			  updateUIPanel();
+			selectedSpaceship = null;
+			}
 		}else{
 			document.getElementById("disembarkAll").style.visibility = "hidden";
 		}
