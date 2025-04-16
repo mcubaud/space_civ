@@ -378,22 +378,22 @@ class Factory {
 
 class Farm extends Factory {
   constructor(base) {
-    super('farm', { water: 2 }, { food: 1 }, {structium : 50}, base);
+    super('farm', { water: 0.02 }, { food: 0.01 }, {structium : 50}, base);
   }
 }
 class Lab extends Factory {
   constructor(base) {
-    super('lab', { }, { science: 1 }, {structium : 50}, base);
+    super('lab', { }, { science: 0.01 }, {structium : 50}, base);
   }
 }
 class Solar_panels extends Factory {
   constructor(base) {
-    super('solar_panels', { }, { energy: 1 }, {copper: 50}, base);
+    super('solar_panels', { }, { energy: 0.01 }, {copper: 50}, base);
   }
 }
 class Mine extends Factory {
   constructor(base) {
-    super('mine', {energy: 4}, { copper: 1, iron: 1, gold: 1}, {structium : 100, iron: 50}, base);
+    super('mine', {energy: 0.04}, { copper: 0.01, iron: 0.01, gold: 0.01}, {structium : 100, iron: 50}, base);
   }
 }
 
@@ -977,6 +977,41 @@ function updateUIPanel() {
       Colonists: ${selectedSpaceship.colonists.length}/${selectedSpaceship.colonist_capacity}<br>
 			<button id="disembarkAll" style="visibility:hidden;">Disembark colonists</button><br>
     `;
+		if (selectedSpaceship.landed && selectedSpaceship.landedPlanet.buildings.find(b => b.type === "base")) {
+      const base = selectedSpaceship.landedPlanet.buildings.find(b => b.type === "base");
+      document.getElementById("placeholderBaseResources").style.display = "block";
+
+      uiPanel.innerHTML += `
+        <h3>Transfer Resources</h3>
+        <form id="resourceTransferForm">
+          <label for="resourceType">Resource Type:</label>
+          <select id="resourceType">
+            <option value="">Select Resource</option>
+          </select><br>
+          <label for="transferAmount">Amount:</label>
+          <input type="number" id="transferAmount" min="1"><br>
+          <button type="button" onclick="transferResources()">Transfer to Base</button>
+          <button type="button" onclick="transferResources(true)">Transfer to Spaceship</button>
+        </form>
+      `;
+
+      // Populate the resource type dropdown
+      const resourceTypeSelect = document.getElementById("resourceType");
+      for (let type in base.resources) {
+          const option = document.createElement("option");
+          option.value = type;
+          option.textContent = type;
+          resourceTypeSelect.appendChild(option);
+        
+      }
+  	for (let type in selectedSpaceship.resources) {
+          const option = document.createElement("option");
+          option.value = type;
+          option.textContent = type;
+          resourceTypeSelect.appendChild(option);
+        
+      }
+  }
 		
   } else if (!currentColonist && !selectedBase && !selectedBuilding && !selectedSpaceship) {
     // Nothing selected
@@ -1037,6 +1072,36 @@ function updateUIPanel() {
 		//TODO add resource transfert UI
   }
 }
+
+function transferResources(toSpaceship = false) {
+  const resourceType = document.getElementById("resourceType").value;
+  const transferAmount = parseInt(document.getElementById("transferAmount").value, 10);
+
+  if (!resourceType || isNaN(transferAmount) || transferAmount <= 0) {
+    alert("Please select a valid resource type and amount.");
+    return;
+  }
+
+  if (toSpaceship) {
+    // Transfer from base to spaceship
+    const base = selectedSpaceship.landedPlanet.buildings.find(b => b.type === "base");
+    if (base.resources[resourceType] >= transferAmount) {
+      base.resources[resourceType] -= transferAmount;
+      selectedSpaceship.resources[resourceType] = (selectedSpaceship.resources[resourceType] || 0) + transferAmount;
+    } else {
+      alert("Not enough resources in the base.");
+    }
+  } else {
+    // Transfer from spaceship to base
+    if (selectedSpaceship.resources[resourceType] >= transferAmount) {
+      selectedSpaceship.resources[resourceType] -= transferAmount;
+      const base = selectedSpaceship.landedPlanet.buildings.find(b => b.type === "base");
+      base.resources[resourceType] = (base.resources[resourceType] || 0) + transferAmount;
+    } else {
+      alert("Not enough resources in the spaceship.");
+    }
+  }
+
 
 function update() {
   ctx.setTransform(1, 0, 0, 1, 0, 0); // reset any transform
