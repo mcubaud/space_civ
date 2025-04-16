@@ -980,7 +980,7 @@ function updateUIPanel() {
     if((s.landed) && (s.landedPlanet.buildings.find(b=>b.type==="base"))){
 			
 			var base = s.landedPlanet.buildings.find(b=>b.type==="base");
-			doument.getElementById("placeholderBaseResources").style.visibility = "visible";
+			document.getElementById("placeholderBaseResources").style.visibility = "visible";
 			var ul2 = document.getElementById("baseResources");
     	ul2.innerHTML = "";
 			for (let type in base.resources) {
