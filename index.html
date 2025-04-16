@@ -977,7 +977,7 @@ function updateUIPanel() {
     for (let type in s.resources) {
       ul.innerHTML += `<li>${type}: ${s.resources[type]}</li>`;
     }
-    if((s.landed) && (s.landedPlanet.buildings.find(b=>b.type==="base")){
+    if((s.landed) && (s.landedPlanet.buildings.find(b=>b.type==="base"))){
 			
 			var base = s.landedPlanet.buildings.find(b=>b.type==="base");
 			doument.getElementById("placeholderBaseResources").visibility = "visible";
