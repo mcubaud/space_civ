@@ -271,14 +271,23 @@ class Spaceship {
     if (index !== -1) {
       this.colonists.splice(index, 1);
       planet.colonists.push(colonist);
-      colonist.currentAngle = this.angle;
-      colonist.angle = this.angle;
+      colonist.currentAngle = this.angle +0.01;
+      colonist.angle = this.angle +0.01;
       colonist.base = planet.buildings.find(b => b.type === "base");
       if(! colonist.base){
 	      colonist.base = this;
       }
     }
   }
+
+	disembarkAll(){
+		if(this.landed){
+			for (let c of this.colonists){
+				this.disembarkColonist(c, this.landedPlanet);
+			}
+		}
+	}
+	
 
   embarkResources(resources) {
     for (let type in resources) {
@@ -954,7 +963,10 @@ function updateUIPanel() {
 			<p style="visibility:hidden;" id="placeholderBaseResources">Base Resources:<br><ul id="baseResources"></ul></p>
       Remaining space: ${selectedSpaceship.capacity}<br>
       Colonists: ${selectedSpaceship.colonists.length}/${selectedSpaceship.colonist_capacity}<br>
+			<button id="disembarkAll" style="visibility:hidden;">Disembark colonists</button><br>
     `;
+		document.getElementByID("disembarkAll").onclick = selectedSpaceship.disembarkAll;
+		
   } else if (!currentColonist && !selectedBase && !selectedBuilding && !selectedSpaceship) {
     // Nothing selected
     if (lastUIState.type !== null) {
@@ -987,6 +999,11 @@ function updateUIPanel() {
     for (let type in s.resources) {
       ul.innerHTML += `<li>${type}: ${s.resources[type]}</li>`;
     }
+		if(s.landed){
+			document.getElementById("disembarkAll").style.visibility = "visible";
+		}else{
+			document.getElementById("disembarkAll").style.visibility = "hidden";
+		}
     if((s.landed) && (s.landedPlanet.buildings.find(b=>b.type==="base"))){
 			
 			var base = s.landedPlanet.buildings.find(b=>b.type==="base");
