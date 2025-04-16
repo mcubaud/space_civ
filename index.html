@@ -570,11 +570,13 @@ class Planet {
         var old_amount = c.carrying[c.targetResource.type]??0;
         c.carrying[c.targetResource.type] = old_amount+amount;
         if(c.capacity<=0){
-	  if(c.base instanceOf Spaceship){
-		  
+	  if(c.base instanceOf Spaceship && c.base.capacity<=0){
+		  c.state = "idle"
+		  c.targetAngle = c.angle + 0.1;
+		  c.moving = true;
 	  }else{
 	          c.state = "to_base";
-	          c.targetAngle = c.base.angle%(Math.PI*2);;
+	          c.targetAngle = c.base.angle%(Math.PI*2);
 	          c.moving = true;
 	  }
         }
@@ -595,9 +597,13 @@ class Planet {
       }
     } else if (c.state === "to_base" && !c.moving) {
       // drop off
-      for(let resource_type in c.carrying){
-        var base_resource_quantity = c.base.resources[resource_type]??0
-        c.base.resources[resource_type] = base_resource_quantity+ c.carrying[resource_type];
+      if(c.base instanceOf Spaceship){
+	      c.base.embarkResources(c.carrying)
+      }else{
+	      for(let resource_type in c.carrying){
+	        var base_resource_quantity = c.base.resources[resource_type]??0
+	        c.base.resources[resource_type] = base_resource_quantity+ c.carrying[resource_type];
+	      }
       }
       c.carrying = {};
       c.capacity = 20;
