@@ -965,7 +965,7 @@ function updateUIPanel() {
       Colonists: ${selectedSpaceship.colonists.length}/${selectedSpaceship.colonist_capacity}<br>
 			<button id="disembarkAll" style="visibility:hidden;">Disembark colonists</button><br>
     `;
-		document.getElementByID("disembarkAll").onclick = selectedSpaceship.disembarkAll;
+		document.getElementById("disembarkAll").onclick = selectedSpaceship.disembarkAll;
 		
   } else if (!currentColonist && !selectedBase && !selectedBuilding && !selectedSpaceship) {
     // Nothing selected
