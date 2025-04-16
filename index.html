@@ -177,6 +177,7 @@ class Spaceship {
     this.landed = false; // Whether the spaceship is landed on a planet
     this.landedPlanet = null; // The planet the spaceship is landed on
     this.angle = null;
+		this.rot_angle = 0;
   }
 
   move() {
@@ -188,14 +189,16 @@ class Spaceship {
       if (dist > this.speed) {
         this.x += (dx / dist) * this.speed;
         this.y += (dy / dist) * this.speed;
+				this.rot_angle = Math.atan2(dy, dx);
       } else {
         this.x = this.targetX;
         this.y = this.targetY;
         this.moving = false;
-	if(this.landedPlanet){
-		this.landed=true;
-		this.landedPlanet.spaceships.push(this);
-	}
+				if(this.landedPlanet){
+					this.landed=true;
+					this.landedPlanet.spaceships.push(this);
+					this.rot_angle = this.angle+Math.PI/2;
+				}
       }
     }
   }
@@ -296,7 +299,7 @@ class Spaceship {
 
   draw() {
     if(this.moving){
-	this.move();
+			this.move();
     }
     ctx.save();
     ctx.translate(this.x, this.y);
@@ -307,6 +310,7 @@ class Spaceship {
     ctx.lineTo(-30, 30);
     ctx.closePath();
     ctx.fill();
+		ctx.rotate(this.rot_angle);
     ctx.restore();
   }
 }
