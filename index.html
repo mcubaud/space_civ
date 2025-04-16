@@ -212,25 +212,26 @@ class Spaceship {
   }
 
   handleSpaceshipClick(x, y){
-	for(let p of planets){
-	//check if we clicked inside a planet
-	    const dx = x - p.center.x;
-	    const dy = y - p.center.y;
-	    const clickDist = Math.sqrt(dx * dx + dy * dy);
-	    const angle = Math.atan2(dy, dx)%(Math.PI*2);
-	    const surfaceR = p.planetRadius(angle);
-	    if ((clickDist) < (surfaceR + 500)) {
-		    this.landOnPlanet(p, angle);
-		    return true
+		for(let p of planets){
+		//check if we clicked inside a planet
+		    const dx = x - p.center.x;
+		    const dy = y - p.center.y;
+		    const clickDist = Math.sqrt(dx * dx + dy * dy);
+		    const angle = Math.atan2(dy, dx)%(Math.PI*2);
+		    const surfaceR = p.planetRadius(angle);
+		    if ((clickDist) < (surfaceR + 500)) {
+			    this.landOnPlanet(p, angle);
+			    return true
+			}
 		}
-	}
-	//else move in space
-	this.targetX = x;
-	this.targetY = y;
-	this.moving = true;
-	if(this.landed){
-		this.takeOff();
-	}
+		//else move in space
+		this.targetX = x;
+		this.targetY = y;
+		this.moving = true;
+		if(this.landed){
+			this.takeOff();
+		}
+		selectedSpaceship = null;
   }
 
   landOnPlanet(planet, angle) {
@@ -244,7 +245,12 @@ class Spaceship {
   }
 
   takeOff() {
-    this.landedPlanet.spaceships = his.landedPlanet.spaceships.filter(x=>x!=this);
+    this.landedPlanet.spaceships = this.landedPlanet.spaceships.filter(x=>x!=this);
+		this.landedPlanet.colonists.forEach(c=>{
+			if(c.base==this){
+				c.base=null;
+			}
+		});
     this.landed = false;
     this.landedPlanet = null;
     this.angle = null;
@@ -570,7 +576,7 @@ class Planet {
         var old_amount = c.carrying[c.targetResource.type] ?? 0;
         c.carrying[c.targetResource.type] = old_amount + amount;
         if (c.capacity <= 0) {
-          if ((c.base instanceof Spaceship) && (c.base.capacity <= 0)) {
+          if (!(c.base) || ((c.base instanceof Spaceship) && (c.base.capacity <= 0))) {
             c.state = "idle";
             c.targetAngle = c.angle + 0.1;
             c.moving = true;
