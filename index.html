@@ -579,8 +579,8 @@ class Planet {
 	          c.targetAngle = c.base.angle%(Math.PI*2);
 	          c.moving = true;
 	  }
+     	 }
         }
-
         // REMOVE depleted resource
         if (c.targetResource.stock <= 0) {
           const index = this.resources.indexOf(c.targetResource);
