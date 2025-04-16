@@ -192,9 +192,9 @@ class Spaceship {
         this.x = this.targetX;
         this.y = this.targetY;
         this.moving = false;
-	if(this.landedPLanet){
+	if(this.landedPlanet){
 		this.landed=true;
-		this.landedPLanet.spaceships.push(this);
+		this.landedPlanet.spaceships.push(this);
 	}
       }
     }
@@ -244,7 +244,7 @@ class Spaceship {
   }
 
   takeOff() {
-    this.landedPLanet.spaceships = his.landedPLanet.spaceships.filter(x=>x!=this);
+    this.landedPlanet.spaceships = his.landedPlanet.spaceships.filter(x=>x!=this);
     this.landed = false;
     this.landedPlanet = null;
     this.angle = null;
