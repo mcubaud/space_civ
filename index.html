@@ -216,6 +216,7 @@ class Spaceship {
     this.targetY = y;
     this.moving = false;
     this.speed = speed; // Speed of the spaceship
+	  this.max_capacity = capacity;
     this.capacity = capacity; // Maximum capacity for resources
     this.colonist_capacity = colonist_capacity;
     this.resources = {}; // Resources carried by the spaceship
@@ -405,7 +406,7 @@ class Factory {
   process(baseResources) {
     let canProcess = true;
     for (let resource in this.inputResources) {
-      if (baseResources[resource] < this.inputResources[resource] * this.workers) {
+      if ((baseResources[resource] || 0) < this.inputResources[resource] * this.workers) {
         canProcess = false;
         break;
       }
@@ -413,7 +414,7 @@ class Factory {
 
     if (canProcess) {
       for (let resource in this.inputResources) {
-        baseResources[resource] -= this.inputResources[resource] * this.workers;
+        baseResources[resource] = (baseResources[resource] || 0) - this.inputResources[resource] * this.workers;
       }
       for (let resource in this.outputResources) {
         baseResources[resource] = (baseResources[resource] || 0) + this.outputResources[resource] * this.workers;
@@ -1107,14 +1108,14 @@ function updateUIPanel() {
     const ul = document.getElementById("baseResources");
     ul.innerHTML = "";
     for (let type in b.resources) {
-      ul.innerHTML += `<li>${type}: ${b.resources[type]}</li>`;
+      ul.innerHTML += `<li>${type}: ${Math.floor(b.resources[type])}</li>`;
     }
   } else if (lastUIState.type === "spaceship") {
     const s = lastUIState.ref;
     const ul = document.getElementById("spaceshipResources");
     ul.innerHTML = "";
     for (let type in s.resources) {
-      ul.innerHTML += `<li>${type}: ${s.resources[type]}</li>`;
+      ul.innerHTML += `<li>${type}: ${Math.floor(s.resources[type])}</li>`;
     }
 		if(s.landed){
 			document.getElementById("disembarkAll").style.visibility = "visible";
@@ -1166,7 +1167,7 @@ function transferResources(toSpaceship = false) {
     // Transfer from spaceship to base
     if (selectedSpaceship.resources[resourceType] >= transferAmount) {
       selectedSpaceship.resources[resourceType] -= transferAmount;
-			selectedSpaceship.capacity = Math.min(20, selectedSpaceship.capacity+transferAmount);
+			selectedSpaceship.capacity = Math.min(selectedSpaceship.max_capacity, selectedSpaceship.capacity+transferAmount);
       const base = selectedSpaceship.landedPlanet.buildings.find(b => b.type === "base");
       base.resources[resourceType] = (base.resources[resourceType] || 0) + transferAmount;
     } else {
