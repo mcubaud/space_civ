@@ -23,6 +23,8 @@
   display: none;
   z-index: 10;
   min-width: 200px;
+  max_height: 600px;
+  overflow: scroll;
 ">
 </div>
 <div id="techTreePanel" style="
@@ -35,7 +37,7 @@
   border-radius: 10px;
   font-family: sans-serif;
   font-size: 14px;
-  display: none;
+  display: block;
   z-index: 10;
   min-width: 200px;
 ">
@@ -65,7 +67,11 @@ let resources_colors = {
   silicon: "#cccccc",
   gold: "#ffd700",
   crystal: "#00ffff",
-  structium: "#cc6600"
+  structium: "#cc6600",
+	lava: "#f5544c",
+	spice: "#d6b66b",
+	uranium: "#99c491",
+	neurocells: "#ff8aff"
 };
 
 var planetTypes = ['desert', 'jungle', 'lava', 'ice', 'rocky'];
@@ -79,11 +85,11 @@ var planetColors = {
 };
 
 var resourceBias = {
-  desert: ['iron', 'iron','silicon', 'silicon', 'silicon', 'gold', 'gold', 'food', 'structium', 'structium'],
-  jungle: ['food','food','food','food','water','water', 'water', 'crystal', 'structium'],
-  lava: ['iron', 'iron', 'iron', 'copper', 'gold', 'structium', 'structium'],
+  desert: ['iron', 'iron','silicon', 'silicon', 'silicon', 'gold', 'gold', 'food', 'structium', 'structium', 'spice'],
+  jungle: ['food','food','food','food','water','water', 'water', 'structium', 'neurocells'],
+  lava: ['iron', 'iron', 'iron', 'copper', 'gold', 'structium', 'structium', 'lava'],
   ice: ['water', 'water', 'water', 'water', 'crystal', 'crystal', 'silicon', 'structium'],
-  rocky: ['iron','iron', 'copper', 'copper', 'silicon', 'silicon', 'water', 'structium', 'structium']
+  rocky: ['iron','iron', 'copper', 'copper', 'silicon', 'silicon', 'water', 'structium', 'structium', 'uranium']
 };
 
 let lastUIState = { type: null, ref: null };
@@ -249,7 +255,7 @@ class Spaceship {
 						for(let c of this.landedPlanet.colonists){
 							if(!c.base){
 								c.base=this;
-								if(c.state=="idle" && c.resources){
+								if(c.state=="idle" && c.carrying){
 									c.state="to_base";
 									c.moving=true;
 								}
@@ -441,6 +447,12 @@ class Solar_panels extends Factory {
 class Mine extends Factory {
   constructor(base) {
     super('mine', {energy: 0.04}, { copper: 0.01, iron: 0.01, gold: 0.01}, {structium : 100, iron: 50}, base);
+  }
+}
+
+class Electronics_factory extends Factory {
+  constructor(base) {
+    super('electronics_factory', {gold: 0.01, silicon: 0.01}, {electronic_circuits: 0.01 }, {structium : 100, iron: 100}, base);
   }
 }
 
@@ -883,6 +895,30 @@ function generatePlanets(n = 5) {
 
       if (!tooClose) {
         planets.push(newPlanet);
+				//Add moons
+				if(Math.random()>0.7){
+					let tries2=0;
+					while (tries < maxTries) {
+						let moonBaseRadius = 100 + Math.random() * 350;
+			      let moonAmplitude = 20 + Math.random() * 20;
+			      let x = newPlanet.center.x + 5*(Math.random()-0.5)*(moonBaseRadius+baseRadius);
+			      let y = newPlanet.center.y + 5*(Math.random()-0.5)*(moonBaseRadius+baseRadius);
+			
+			      const newMoon = new Planet(x, y, moonBaseRadius, moonAmplitude);
+			      let tooClose = planets.some(p => {
+			        let dx = p.center.x - newPlanet.center.x;
+			        let dy = p.center.y - newPlanet.center.y;
+			        let dist = Math.sqrt(dx * dx + dy * dy);
+			        return dist < 2 * (p.baseRadius + newPlanet.baseRadius);
+			      });
+			
+			      if (!tooClose) {
+			        planets.push(newMoon);
+							break;
+						}
+						tries2++;
+					}
+				}
         break;
       }
       tries++;
@@ -891,7 +927,7 @@ function generatePlanets(n = 5) {
   return planets;
 }
 
-var planets = generatePlanets(5);
+var planets = generatePlanets(10);
 planets[0].spawnBase(Math.random() * Math.PI * 2);
 var base_pos = planets[0].getSurfacePosition(planets[0].buildings[0].angle)
 planets[0].buildings[0].resources = {
