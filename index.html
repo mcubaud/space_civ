@@ -893,8 +893,8 @@ function generatePlanets(n = 5) {
     while (tries < maxTries) {
       let baseRadius = 500 + Math.random() * 2000;
       let amplitude = 20 + Math.random() * 20;
-      let x = (Math.random()-0.5) * 120000;
-      let y = (Math.random()-0.5) * 48000;
+      let x = (Math.random()-0.5) * 200000;
+      let y = (Math.random()-0.5) * 68000;
 
       const newPlanet = new Planet(x, y, baseRadius, amplitude);
       let tooClose = planets.some(p => {
@@ -907,25 +907,25 @@ function generatePlanets(n = 5) {
       if (!tooClose) {
         planets.push(newPlanet);
 				//Add moons
-				if(Math.random()>0.7){
-					let tries2=tries;
+				if(Math.random()>0.6){
+					let tries2=0;
 					while (tries2 < maxTries) {
 						let moonBaseRadius = 100 + Math.random() * 350;
 			      let moonAmplitude = 20 + Math.random() * 20;
 						let moonAngle = 2*Math.PI*Math.random();
 						let moonDistance = (1.3+2*Math.random())*(moonBaseRadius+baseRadius);
-			      let x = newPlanet.center.x + Math.cos(moonAngle)*moonDistance;
-			      let y = newPlanet.center.y +  Math.sin(moonAngle)*moonDistance;
+						let x = newPlanet.center.x + Math.cos(moonAngle)*moonDistance;
+						let y = newPlanet.center.y +  Math.sin(moonAngle)*moonDistance;
 			
-			      const newMoon = new Planet(x, y, moonBaseRadius, moonAmplitude);
-			      let tooClose = planets.some(p => {
-			        let dx = p.center.x - newPlanet.center.x;
-			        let dy = p.center.y - newPlanet.center.y;
-			        let dist = Math.sqrt(dx * dx + dy * dy);
-			        return dist < 2 * (p.baseRadius + newPlanet.baseRadius);
-			      });
+						const newMoon = new Planet(x, y, moonBaseRadius, moonAmplitude);
+						let tooClose2 = planets.some(p => {
+							let dx2 = p.center.x - newMoon.center.x;
+							let dy2 = p.center.y - newMoon.center.y;
+							let dist2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+							return dist2 < 2 * (p.baseRadius + newMoon.baseRadius);
+						});
 			
-			      if (!tooClose) {
+			      if (!tooClose2) {
 			        planets.push(newMoon);
 							break;
 						}
@@ -940,7 +940,7 @@ function generatePlanets(n = 5) {
   return planets;
 }
 
-var planets = generatePlanets(10);
+planets = generatePlanets(15);
 planets[0].spawnBase(Math.random() * Math.PI * 2);
 var base_pos = planets[0].getSurfacePosition(planets[0].buildings[0].angle)
 planets[0].buildings[0].resources = {
