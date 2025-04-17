@@ -901,8 +901,10 @@ function generatePlanets(n = 5) {
 					while (tries < maxTries) {
 						let moonBaseRadius = 100 + Math.random() * 350;
 			      let moonAmplitude = 20 + Math.random() * 20;
-			      let x = newPlanet.center.x + 5*(Math.random()-0.5)*(moonBaseRadius+baseRadius);
-			      let y = newPlanet.center.y + 5*(Math.random()-0.5)*(moonBaseRadius+baseRadius);
+						let moonAngle = 2*Math.PI*Math.random();
+						let moonDistance = (1.5+4*Math.random())*(moonBaseRadius+baseRadius);
+			      let x = newPlanet.center.x + Math.cos(moonAngle)*moonDistance;
+			      let y = newPlanet.center.y +  Math.sin(moonAngle)*moonDistance;
 			
 			      const newMoon = new Planet(x, y, moonBaseRadius, moonAmplitude);
 			      let tooClose = planets.some(p => {
