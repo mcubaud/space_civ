@@ -1155,8 +1155,9 @@ function transferResources(toSpaceship = false) {
   if (toSpaceship) {
     // Transfer from base to spaceship
     const base = selectedSpaceship.landedPlanet.buildings.find(b => b.type === "base");
-    if (base.resources[resourceType] >= transferAmount) {
+    if (base.resources[resourceType] >= transferAmount && selectedSpaceship.capacity>=transferAmount) {
       base.resources[resourceType] -= transferAmount;
+			selectedSpaceship.capacity -= transferAmount;
       selectedSpaceship.resources[resourceType] = (selectedSpaceship.resources[resourceType] || 0) + transferAmount;
     } else {
       alert("Not enough resources in the base.");
@@ -1165,6 +1166,7 @@ function transferResources(toSpaceship = false) {
     // Transfer from spaceship to base
     if (selectedSpaceship.resources[resourceType] >= transferAmount) {
       selectedSpaceship.resources[resourceType] -= transferAmount;
+			selectedSpaceship.capacity = Math.min(20, selectedSpaceship.capacity+transferAmount);
       const base = selectedSpaceship.landedPlanet.buildings.find(b => b.type === "base");
       base.resources[resourceType] = (base.resources[resourceType] || 0) + transferAmount;
     } else {
