@@ -449,6 +449,17 @@ class Mine extends Factory {
     super('mine', {energy: 0.04}, { copper: 0.01, iron: 0.01, gold: 0.01}, {structium : 100, iron: 50}, base);
   }
 }
+class Structium_mine extends Factory {
+  constructor(base) {
+    super('structium_mine', {energy: 0.01}, { structium: 0.01}, {structium : 100, iron: 100}, base);
+  }
+}
+
+class Silicone_mine extends Factory {
+  constructor(base) {
+    super('silicone_mine', {energy: 0.1}, { silicone: 0.01}, {structium : 100, iron: 200}, base);
+  }
+}
 
 class Electronics_factory extends Factory {
   constructor(base) {
@@ -883,7 +894,7 @@ function generatePlanets(n = 5) {
       let baseRadius = 500 + Math.random() * 2000;
       let amplitude = 20 + Math.random() * 20;
       let x = (Math.random()-0.5) * 60000;
-      let y = (Math.random()-0.5)* * 24000;
+      let y = (Math.random()-0.5) * 24000;
 
       const newPlanet = new Planet(x, y, baseRadius, amplitude);
       let tooClose = planets.some(p => {
